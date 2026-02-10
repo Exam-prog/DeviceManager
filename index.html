@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>유한화학 데이터 무결성(DI) 시스템 고도화 제안</title>
     
-    <!-- 1. 필수 라이브러리 로드 (React, ReactDOM, Babel, Tailwind) -->
+    <!-- 1. 필수 라이브러리 로드 -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -18,48 +18,32 @@
 
     <style>
         body { font-family: 'Noto Sans', sans-serif; }
-        /* 스크롤바 숨김 처리 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .slide-enter { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-200">
-    <!-- React 앱이 렌더링될 루트 요소 -->
     <div id="root"></div>
 
-    <!-- 3. React 애플리케이션 코드 (Babel이 변환) -->
     <script type="text/babel">
-        // 전역 객체에서 React 함수들 가져오기 (import 대신 사용)
         const { useState, useEffect } = React;
 
-        // --- 아이콘 컴포넌트 정의 (Lucide React 의존성 제거를 위해 SVG 직접 구현) ---
-        const ShieldCheck = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-        );
-        const Database = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-        );
-        const FileCheck = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
-        );
-        const Lock = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        );
-        const Search = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        );
-        const ChartIcon = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-        );
-        const CheckCircle2 = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-        );
-        const ChevronRight = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>
-        );
-        const Monitor = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
-        );
+        // --- 아이콘 컴포넌트 (SVG 직접 정의) ---
+        const ShieldCheck = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>);
+        const Database = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>);
+        const FileCheck = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>);
+        const Lock = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>);
+        const Search = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>);
+        const ChartIcon = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>);
+        const CheckCircle2 = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>);
+        const ChevronRight = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>);
+        const Monitor = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>);
+        const Zap = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>);
+        const Wrench = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>);
+        const LayoutDashboard = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>);
+        const Brain = ({ size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>);
 
         // --- 메인 애플리케이션 ---
         const App = () => {
@@ -67,8 +51,8 @@
 
             // 공통 슬라이드 레이아웃
             const SlideLayout = ({ title, children }) => (
-                <div className="h-full w-full flex flex-col p-6 md:p-10 relative">
-                    <div className="flex-none mb-4 md:mb-8 z-10">
+                <div className="h-full w-full flex flex-col p-6 md:p-10 relative slide-enter bg-white">
+                    <div className="flex-none mb-4 md:mb-6 z-10">
                         <h2 className="text-2xl md:text-3xl font-black text-[#001738] flex items-center gap-3">
                             <span className="w-2 h-6 md:h-8 bg-[#AF251B]"></span>
                             {title}
@@ -81,60 +65,70 @@
             );
 
             const slides = [
+                // 1. 표지
                 {
                     id: 'title',
                     render: () => (
-                        <div className="flex flex-col items-center justify-center h-full text-white bg-[#001738] p-4 text-center">
+                        <div className="flex flex-col items-center justify-center h-full text-white bg-[#001738] p-4 text-center slide-enter relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[#AF251B] opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                             <div className="mb-6 md:mb-8 w-16 md:w-24 h-1 bg-[#AF251B]"></div>
-                            <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Data Integrity System</h1>
-                            <h2 className="text-lg md:text-2xl font-light opacity-80">Project Proposal for Yuhan Chemical</h2>
-                            <div className="mt-8 md:mt-16 flex items-center gap-8 md:gap-12">
-                                <div className="flex flex-col items-center opacity-60">
-                                    <ShieldCheck size={32} className="md:w-12 md:h-12" />
-                                    <span className="mt-2 text-xs md:text-sm">Security</span>
+                            <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight leading-tight">유한화학 데이터 무결성(DI)<br/>시스템 고도화 프로젝트</h1>
+                            <h2 className="text-lg md:text-xl font-light opacity-80 mt-2">자산 가치 증명 및 글로벌 규제 대응을 위한 혁신 전략</h2>
+                            
+                            <div className="mt-12 md:mt-20 grid grid-cols-3 gap-8 md:gap-16">
+                                <div className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+                                    <div className="bg-white/10 p-3 rounded-full mb-3"><ShieldCheck size={32} /></div>
+                                    <span className="text-xs md:text-sm font-medium">Security</span>
                                 </div>
-                                <div className="flex flex-col items-center opacity-60">
-                                    <Database size={32} className="md:w-12 md:h-12" />
-                                    <span className="mt-2 text-xs md:text-sm">Traceability</span>
+                                <div className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+                                    <div className="bg-white/10 p-3 rounded-full mb-3"><Database size={32} /></div>
+                                    <span className="text-xs md:text-sm font-medium">Traceability</span>
                                 </div>
-                                <div className="flex flex-col items-center opacity-60">
-                                    <FileCheck size={32} className="md:w-12 md:h-12" />
-                                    <span className="mt-2 text-xs md:text-sm">Compliance</span>
+                                <div className="flex flex-col items-center opacity-70 hover:opacity-100 transition-opacity">
+                                    <div className="bg-white/10 p-3 rounded-full mb-3"><FileCheck size={32} /></div>
+                                    <span className="text-xs md:text-sm font-medium">Compliance</span>
                                 </div>
                             </div>
                         </div>
                     )
                 },
+                // 2. DI System 정의
                 {
                     id: 'definition',
                     render: () => (
-                        <SlideLayout title="유한화학의 DI System이란?">
+                        <SlideLayout title="유한화학의 DI System은?">
                             <div className="h-full flex flex-col justify-center">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center h-full">
-                                    <div className="space-y-4 md:space-y-8 flex flex-col justify-center">
-                                        <div className="border-l-4 border-[#AF251B] pl-4 md:pl-6">
-                                            <h3 className="text-xl md:text-2xl font-bold text-[#001738] mb-2">자산가치증명 시스템</h3>
-                                            <p className="text-sm md:text-lg text-gray-700 leading-relaxed">
-                                                제품 생산 및 연구 과정의 신뢰성을 입증하여 유한화학의 핵심 유/무형 자산을 보호하고 그 가치를 데이터로 증명합니다.
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
+                                    <div className="space-y-8 flex flex-col justify-center">
+                                        <div className="bg-slate-50 p-6 rounded-xl border-l-4 border-[#AF251B] shadow-sm">
+                                            <h3 className="text-xl md:text-2xl font-bold text-[#001738] mb-3 flex items-center gap-2">
+                                                <Database size={24} className="text-[#AF251B]"/> 자산 가치 증명
+                                            </h3>
+                                            <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                                                제품 생산 및 연구 과정의 신뢰성을 입증하여 유한화학의 <strong>핵심 유/무형 자산을 보호</strong>하고 그 가치를 데이터로 증명하는 시스템입니다.
                                             </p>
                                         </div>
-                                        <div className="border-l-4 border-[#AF251B] pl-4 md:pl-6">
-                                            <h3 className="text-xl md:text-2xl font-bold text-[#001738] mb-2">보안 및 통제 활동</h3>
-                                            <p className="text-sm md:text-lg text-gray-700 leading-relaxed">
-                                                데이터의 누락, 조작, 오염을 차단하기 위한 기술적 통제(Technical Controls)를 통해 완벽한 신뢰 프로세스를 구축합니다.
+                                        <div className="bg-slate-50 p-6 rounded-xl border-l-4 border-[#001738] shadow-sm">
+                                            <h3 className="text-xl md:text-2xl font-bold text-[#001738] mb-3 flex items-center gap-2">
+                                                <ShieldCheck size={24} className="text-[#001738]"/> 보안 및 통제 활동
+                                            </h3>
+                                            <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                                                데이터의 <strong>누락, 조작, 오염을 원천 차단</strong>하기 위한 기술적 통제(Technical Controls)를 통해 완벽한 신뢰 프로세스를 구축합니다.
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="h-full max-h-[300px] md:max-h-none bg-gray-100 rounded-2xl p-4 md:p-8 flex items-center justify-center relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                                            <Lock size={80} className="md:w-[120px] md:h-[120px]" />
-                                        </div>
-                                        <div className="z-10 text-center">
-                                            <div className="bg-[#AF251B] text-white p-4 md:p-6 rounded-full inline-block mb-4 shadow-lg">
-                                                <ShieldCheck size={32} className="md:w-10 md:h-10" />
+                                    <div className="h-full max-h-[400px] bg-gradient-to-br from-gray-100 to-white rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden border border-gray-100">
+                                        <div className="text-center z-10">
+                                            <div className="inline-flex items-center justify-center p-6 bg-[#001738] text-white rounded-full shadow-xl mb-6">
+                                                <Lock size={48} />
                                             </div>
-                                            <p className="font-bold text-lg md:text-xl text-[#001738]">글로벌 규제 대응 최적화</p>
-                                            <p className="text-xs md:text-sm text-gray-500 mt-2">FDA 21 CFR Part 11 / EU Annex 11 Compliance</p>
+                                            <h4 className="text-xl font-bold text-[#001738] mb-2">글로벌 규제 완벽 대응</h4>
+                                            <p className="text-sm text-gray-500">FDA 21 CFR Part 11</p>
+                                            <p className="text-sm text-gray-500">EU Annex 11 Compliance</p>
+                                        </div>
+                                        {/* Decorative Background */}
+                                        <div className="absolute inset-0 opacity-5 grid grid-cols-6 grid-rows-6">
+                                            {[...Array(36)].map((_, i) => <div key={i} className="border-r border-b border-[#001738]"></div>)}
                                         </div>
                                     </div>
                                 </div>
@@ -142,138 +136,311 @@
                         </SlideLayout>
                     )
                 },
+                // 3. ALCOA++
                 {
                     id: 'alcoa',
                     render: () => (
                         <SlideLayout title="ALCOA++ 기반 데이터 관리 전략">
                             <div className="h-full flex flex-col">
-                                <div className="bg-[#001738] p-4 md:p-8 rounded-2xl md:rounded-3xl text-white mb-4 md:mb-8 flex-none shadow-lg">
-                                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                                        <div className="text-center md:text-left">
-                                            <h3 className="text-2xl md:text-3xl font-bold">ALCOA++</h3>
-                                            <p className="opacity-70 text-sm md:text-base">The Gold Standard for Data Integrity</p>
+                                <div className="bg-[#001738] p-6 rounded-2xl text-white mb-6 shadow-md flex-none">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <h3 className="text-2xl font-bold mb-1">ALCOA++ Standard</h3>
+                                            <p className="opacity-70 text-sm">데이터 무결성을 위한 10가지 골든 룰</p>
                                         </div>
-                                        <div className="flex gap-1 md:gap-2">
+                                        <div className="flex gap-1">
                                             {['A','L','C','O','A','+','+'].map((t, i) => (
-                                                <div key={i} className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-[#AF251B] font-bold rounded-lg text-sm md:text-base shadow-sm">{t}</div>
+                                                <div key={i} className="w-8 h-8 flex items-center justify-center bg-[#AF251B] font-bold rounded shadow-sm text-sm">{t}</div>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 text-xs md:text-sm overflow-y-auto content-start no-scrollbar">
+                                <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-3 overflow-y-auto content-start no-scrollbar pb-2">
                                     {[
-                                        {k: 'Attributable', v: '누가, 언제 생성했는지 추적 가능'},
-                                        {k: 'Legible', v: '영구적으로 식별 및 판독 가능'},
-                                        {k: 'Contemporaneous', v: '활동 시점에 실시간으로 기록'},
-                                        {k: 'Original', v: '최초의 원본 또는 인증된 사본'},
-                                        {k: 'Accurate', v: '오류가 없고 정확한 데이터'},
-                                        {k: 'Complete', v: '누락 없이 모든 관련 정보 포함'},
-                                        {k: 'Consistent', v: '데이터의 논리적 순서 및 일관성'},
-                                        {k: 'Enduring', v: '보존 기간 동안 안전하게 유지'},
-                                        {k: 'Available (+)', v: '필요 시 즉시 검색 및 열람 가능'},
-                                        {k: 'Traceability (++)', v: '모든 변경 이력의 완벽한 추적'}
+                                        {k: 'Attributable', v: '누가, 언제 생성했는가?'},
+                                        {k: 'Legible', v: '영구적 식별/판독 가능'},
+                                        {k: 'Contemporaneous', v: '활동 시점 실시간 기록'},
+                                        {k: 'Original', v: '최초의 원본 유지'},
+                                        {k: 'Accurate', v: '오류 없는 정확성'},
+                                        {k: 'Complete', v: '누락 없는 완전성'},
+                                        {k: 'Consistent', v: '논리적 순서/일관성'},
+                                        {k: 'Enduring', v: '안전한 보존 기간'},
+                                        {k: 'Available (+)', v: '즉시 검색/열람 가능'},
+                                        {k: 'Traceability (++)', v: '변경 이력 완벽 추적'}
                                     ].map((item, idx) => (
-                                        <div key={idx} className={`border p-3 md:p-4 rounded-xl hover:shadow-md transition-shadow bg-white flex flex-col justify-center ${idx >= 8 ? 'ring-1 ring-[#AF251B] bg-red-50/50' : ''}`}>
-                                            <p className="text-[#AF251B] font-bold mb-1">{item.k}</p>
-                                            <p className="text-[#001738] text-opacity-80 leading-tight">{item.v}</p>
+                                        <div key={idx} className={`border p-3 rounded-xl hover:shadow-md transition-all bg-white flex flex-col justify-center group ${idx >= 8 ? 'ring-1 ring-[#AF251B] bg-red-50' : ''}`}>
+                                            <p className="text-[#AF251B] font-bold mb-1 text-sm group-hover:scale-105 transition-transform origin-left">{item.k}</p>
+                                            <p className="text-[#001738] text-xs opacity-80 leading-tight">{item.v}</p>
                                         </div>
                                     ))}
                                 </div>
-                                <p className="mt-4 text-center text-gray-400 text-xs italic flex-none hidden md:block">[이미지: ALCOA++ 원칙의 전 주기적 순환 구조도]</p>
                             </div>
                         </SlideLayout>
                     )
                 },
+                // 4. 전략 1: Audit Trail
                 {
                     id: 'strategy1',
                     render: () => (
-                        <SlideLayout title="고도화 전략 01: 원클릭 Audit Trail 조회">
+                        <SlideLayout title="전략 01: Audit Trail / Alarm 이력 조회">
                             <div className="h-full flex flex-col">
-                                <div className="flex-1 bg-white border rounded-2xl shadow-inner p-4 md:p-6 overflow-hidden relative flex flex-col">
-                                    <div className="flex justify-between items-center mb-4 flex-none">
-                                        <h4 className="font-bold flex items-center gap-2 text-sm md:text-base"><ChartIcon size={20} className="text-[#AF251B]"/> Real-time Process Trend</h4>
-                                        <span className="text-[10px] md:text-xs bg-red-100 text-red-600 px-2 py-1 rounded animate-pulse">Deviation Detected!</span>
-                                    </div>
-                                    
+                                <div className="bg-slate-50 border-l-4 border-[#AF251B] p-4 mb-4 rounded-r-xl">
+                                    <h3 className="font-bold text-[#001738] flex items-center gap-2">
+                                        <Search size={20} className="text-[#AF251B]"/> 일탈 시점 원클릭 추적 (One-Click Traceability)
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mt-1">공정 Trend 그래프의 특정 Point를 클릭하여 해당 시점의 변경 이력과 알람을 즉시 조회합니다.</p>
+                                </div>
+
+                                <div className="flex-1 bg-white border rounded-2xl shadow-inner p-4 relative flex flex-col overflow-hidden">
                                     {/* Mock Chart Area */}
-                                    <div className="flex-1 min-h-[120px] bg-slate-50 relative flex items-end px-4 gap-1 border-b pb-1">
-                                        {[40, 45, 42, 85, 43, 41, 39, 44].map((h, i) => (
+                                    <div className="h-32 bg-slate-50 relative flex items-end px-4 gap-2 border-b pb-2 mb-2">
+                                        {[40, 42, 45, 85, 50, 42, 40, 41, 43, 40].map((h, i) => (
                                             <div 
                                                 key={i} 
-                                                className={`flex-1 transition-all cursor-pointer ${h > 60 ? 'bg-[#AF251B]' : 'bg-[#001738] opacity-40'} hover:opacity-100 rounded-t-sm relative group`}
+                                                className={`flex-1 rounded-t-sm transition-all cursor-pointer relative group ${h > 60 ? 'bg-[#AF251B]' : 'bg-[#001738] opacity-30 hover:opacity-60'}`}
                                                 style={{height: `${h}%`}}
-                                                onClick={() => alert(`Timestamp: 2024-05-20 14:02:${30+i}\nEvent: Setpoint Change`)}
+                                                onClick={() => alert(`[분석 모드] ${i===3 ? '이탈 발생!' : '정상 구간'}`)}
                                             >
                                                 {h > 60 && (
-                                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">
-                                                        <Search size={16} className="text-[#AF251B] md:w-6 md:h-6"/>
+                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce">
+                                                        <span className="text-[10px] font-bold text-[#AF251B] mb-0.5">Click!</span>
+                                                        <div className="w-2 h-2 bg-[#AF251B] rounded-full"></div>
                                                     </div>
                                                 )}
-                                                <div className="opacity-0 group-hover:opacity-100 absolute bottom-0 left-1/2 -translate-x-1/2 text-[8px] bg-black text-white p-1 rounded whitespace-nowrap z-20 pointer-events-none">
-                                                    Click to Analyze
-                                                </div>
                                             </div>
                                         ))}
+                                        <div className="absolute top-2 left-2 text-xs font-bold text-gray-400">Process Temperature Trend</div>
                                     </div>
                                     
-                                    <div className="mt-4 flex-none">
-                                        <h4 className="font-bold text-xs md:text-sm mb-2 text-gray-500">Linked Audit Trail / Alarm List</h4>
-                                        <div className="text-[10px] md:text-xs w-full border rounded shadow-sm bg-white">
-                                            <div className="bg-gray-100 grid grid-cols-4 p-2 font-bold border-b">
-                                                <span>Timestamp</span><span>User</span><span>Action</span><span>Reason</span>
-                                            </div>
-                                            <div className="grid grid-cols-4 p-2 border-b bg-red-50 hover:bg-red-100 cursor-pointer transition-colors">
-                                                <span>14:02:33</span><span>Yuhan_OP_01</span><span>Value Changed (42 {'->'} 85)</span><span>Emergency Adjust</span>
-                                            </div>
-                                            <div className="grid grid-cols-4 p-2 text-gray-400">
-                                                <span>14:02:15</span><span>System</span><span>Login Success</span><span>-</span>
-                                            </div>
+                                    <div className="flex-1 bg-gray-50 rounded-xl border p-3">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h4 className="text-sm font-bold text-[#001738] flex items-center gap-2">
+                                                <FileCheck size={16}/> Linked Audit Trail List
+                                            </h4>
+                                            <span className="text-[10px] bg-[#001738] text-white px-2 py-0.5 rounded-full">Filtered: 14:02:30 ~ 14:02:35</span>
                                         </div>
-                                    </div>
-                                    <div className="absolute bottom-2 right-4 text-[#AF251B] font-bold text-[10px] md:text-xs">
-                                        Trend Point 원클릭 시 이력 즉시 동기화
+                                        <table className="w-full text-xs text-left">
+                                            <thead className="bg-gray-200 text-gray-600">
+                                                <tr>
+                                                    <th className="p-2 rounded-tl-lg">Timestamp</th>
+                                                    <th className="p-2">User</th>
+                                                    <th className="p-2">Action</th>
+                                                    <th className="p-2 rounded-tr-lg">Reason</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr className="border-b bg-red-50 hover:bg-red-100 transition-colors cursor-pointer">
+                                                    <td className="p-2 font-mono">2024-02-10 14:02:33</td>
+                                                    <td className="p-2 font-bold">Operator_Kim</td>
+                                                    <td className="p-2 text-[#AF251B] font-bold">Setpoint Changed (45 → 85)</td>
+                                                    <td className="p-2">Emergency Heating</td>
+                                                </tr>
+                                                <tr className="text-gray-400">
+                                                    <td className="p-2 font-mono">2024-02-10 14:02:15</td>
+                                                    <td className="p-2">System</td>
+                                                    <td className="p-2">Auto-Calibration</td>
+                                                    <td className="p-2">-</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </SlideLayout>
                     )
                 },
+                // 5. 전략 2: Golden Batch Modeling
                 {
                     id: 'strategy2',
                     render: () => (
-                        <SlideLayout title="고도화 전략 02: Golden Batch Modeling">
-                            <div className="h-full flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-8 overflow-y-auto md:overflow-hidden no-scrollbar">
-                                <div className="space-y-4 md:space-y-6 flex flex-col">
-                                    <div className="bg-[#001738] p-4 md:p-6 rounded-2xl text-white shadow-md">
-                                        <h4 className="text-lg md:text-xl font-bold mb-2 md:mb-4 flex items-center gap-2"><CheckCircle2 size={24} className="text-[#AF251B]"/> 나이스 품질 공정 데이터 세트</h4>
-                                        <p className="text-xs md:text-sm opacity-80 leading-relaxed">
-                                            과거의 생산 이력 중 가장 품질이 좋았던 'Golden Batch' 데이터를 표준 세트로 기록하고 관리합니다.
-                                        </p>
-                                    </div>
-                                    <div className="border p-4 md:p-6 rounded-2xl flex-1 bg-white">
-                                        <h4 className="font-bold mb-2 md:mb-4 flex items-center gap-2 text-[#001738]"><Monitor size={20}/> SCADA 화면 반영 및 모니터링</h4>
-                                        <ul className="space-y-2 md:space-y-3 text-xs md:text-sm">
-                                            <li className="flex items-center gap-2 text-gray-600"><ChevronRight size={14} className="text-[#AF251B]"/> 실시간 공정 수치 vs Golden Batch 편차 가시화</li>
-                                            <li className="flex items-center gap-2 text-gray-600"><ChevronRight size={14} className="text-[#AF251B]"/> 체크보드 형태의 일치도 모니터링 대시보드</li>
-                                            <li className="flex items-center gap-2 text-gray-600"><ChevronRight size={14} className="text-[#AF251B]"/> 한계치 이탈 전 사전 경고 알람 (Predictive)</li>
-                                        </ul>
+                        <SlideLayout title="전략 02: Golden Batch Modeling">
+                            <div className="h-full flex flex-col gap-4 overflow-y-auto no-scrollbar pb-2">
+                                {/* 헤더 설명 */}
+                                <div className="flex items-start gap-4 p-4 bg-[#001738] rounded-xl text-white shadow-md flex-none">
+                                    <div className="p-2 bg-white/10 rounded-lg"><Monitor size={24} /></div>
+                                    <div>
+                                        <h3 className="font-bold text-lg">고품질 공정 데이터 세트(Nice Data) 기록 및 활용</h3>
+                                        <p className="text-sm opacity-80 mt-1">최적의 생산 이력을 기준으로 현재 공정 상태를 실시간 비교/감시합니다.</p>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 p-4 md:p-6 flex flex-col min-h-[200px]">
-                                    <h5 className="text-center font-bold text-[#001738] mb-4 text-sm md:text-base">Quality Matching Checkboard</h5>
-                                    <div className="grid grid-cols-3 gap-2 md:gap-4 flex-1 content-start">
-                                        {[...Array(6)].map((_, i) => (
-                                            <div key={i} className="bg-white border rounded-xl p-2 md:p-4 flex flex-col items-center justify-center shadow-sm hover:scale-105 transition-transform">
-                                                <span className="text-[8px] md:text-[10px] text-gray-400">Parameter {i+1}</span>
-                                                <span className="font-bold text-sm md:text-lg text-[#001738]">{95 + i}%</span>
-                                                <div className="w-full bg-gray-200 h-1 md:h-1.5 mt-2 rounded-full overflow-hidden">
-                                                    <div className="bg-green-500 h-full" style={{width: `${95+i}%`}}></div>
+
+                                {/* 3단 컬럼 구성 */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                                    {/* 1. 체크보드 모니터링 */}
+                                    <div className="bg-white border rounded-xl p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex items-center gap-2 mb-3 text-[#AF251B] font-bold text-sm">
+                                            <CheckCircle2 size={18}/> 1. Checkboard Monitoring
+                                        </div>
+                                        <p className="text-xs text-gray-600 mb-4 h-12">다변수 데이터(온도, 압력, 유량 등)를 시계열로 추출, 라이트 머신러닝으로 오차 범위 모니터링</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[98, 95, 82, 99, 97, 96].map((v, i) => (
+                                                <div key={i} className={`text-center p-2 rounded ${v < 90 ? 'bg-red-100 text-[#AF251B] animate-pulse' : 'bg-green-50 text-green-700'}`}>
+                                                    <div className="text-[10px]">P-{i+1}</div>
+                                                    <div className="font-bold text-sm">{v}%</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 2. SCADA 화면 반영 */}
+                                    <div className="bg-white border rounded-xl p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex items-center gap-2 mb-3 text-[#AF251B] font-bold text-sm">
+                                            <LayoutDashboard size={18}/> 2. SCADA Overlay
+                                        </div>
+                                        <p className="text-xs text-gray-600 mb-4 h-12">실시간 값 뒤에 Golden Batch 그래프를 연한 회색으로 오버레이 표기. 이탈 시 작업자 즉시 개입 유도.</p>
+                                        <div className="h-24 bg-slate-50 relative rounded border flex items-end px-2 overflow-hidden">
+                                            {/* Golden Batch (Background) */}
+                                            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gray-200 opacity-50 rounded-t-lg mx-4"></div>
+                                            {/* Real-time (Foreground) */}
+                                            <div className="w-1/2 h-14 bg-[#001738] rounded-t opacity-80 ml-4 z-10"></div>
+                                            <div className="absolute top-2 right-2 text-[10px] text-red-500 font-bold bg-white px-1 border border-red-200 rounded">Warn: Low RPM</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Report & Visualization */}
+                                    <div className="bg-white border rounded-xl p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex items-center gap-2 mb-3 text-[#AF251B] font-bold text-sm">
+                                            <FileCheck size={18}/> 3. Report Guide
+                                        </div>
+                                        <p className="text-xs text-gray-600 mb-4 h-12">유사도 점수(%) 출력 및 편차 원인 분석을 통한 구체적인 관리 가이드 제공.</p>
+                                        <div className="bg-yellow-50 border border-yellow-200 p-3 rounded text-[10px] text-gray-700 font-mono">
+                                            <strong>[System Alert]</strong><br/>
+                                            HC동 반응기 103<br/>
+                                            현재: 2단계 촉매 투입<br/>
+                                            상태: Golden Batch 대비 RPM 낮음<br/>
+                                            <span className="text-[#AF251B] font-bold">>> 기어박스 점검 요망</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </SlideLayout>
+                    )
+                },
+                // 6. 전략 3: 고장 예고 머신러닝
+                {
+                    id: 'strategy3',
+                    render: () => (
+                        <SlideLayout title="전략 03: 성능평가 기반 예지보전 (PdM)">
+                            <div className="h-full flex flex-col justify-center">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                    <div className="space-y-6">
+                                        <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#AF251B]">
+                                            <h3 className="font-bold text-lg text-[#001738] mb-2 flex items-center gap-2">
+                                                <Zap size={20} className="text-yellow-500"/> 입력값 vs 퍼포먼스 분석
+                                            </h3>
+                                            <p className="text-sm text-gray-600 leading-relaxed">
+                                                설비에 투입되는 에너지(전압, 유량, 온도) 대비 <strong>실제 발휘되는 기대 성능</strong>을 실시간 비교 분석합니다.
+                                            </p>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-[#001738]">
+                                            <h3 className="font-bold text-lg text-[#001738] mb-2 flex items-center gap-2">
+                                                <Wrench size={20} className="text-blue-500"/> 유지보수 가이드 자동화
+                                            </h3>
+                                            <p className="text-sm text-gray-600 leading-relaxed">
+                                                성능 미달 판정 시, 작업자에게 즉시 알람을 발송하고 <strong>구체적인 유지보수 가이드 팝업</strong>을 띄워 조기 대응을 유도합니다.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Visual Representation */}
+                                    <div className="bg-slate-100 rounded-2xl p-6 relative flex flex-col items-center justify-center border border-slate-200">
+                                        <div className="flex items-center gap-4 mb-8 w-full justify-center">
+                                            <div className="text-center">
+                                                <div className="text-xs text-gray-500 mb-1">Input Power</div>
+                                                <div className="w-20 h-2 bg-green-500 rounded-full"></div>
+                                            </div>
+                                            <ChevronRight className="text-gray-400"/>
+                                            <div className="p-4 bg-white rounded-lg shadow-sm border">
+                                                <Monitor size={32} className="text-[#001738]"/>
+                                            </div>
+                                            <ChevronRight className="text-gray-400"/>
+                                            <div className="text-center">
+                                                <div className="text-xs text-gray-500 mb-1">Output Perf.</div>
+                                                <div className="w-20 h-2 bg-red-500 rounded-full relative">
+                                                    <span className="absolute -top-4 right-0 text-[10px] text-red-500 font-bold">Low Efficiency</span>
                                                 </div>
                                             </div>
-                                        ))}
+                                        </div>
+                                        
+                                        {/* Popup UI Mockup */}
+                                        <div className="bg-white rounded-lg shadow-2xl p-4 w-64 border border-red-100 animate-pulse">
+                                            <div className="flex items-center gap-2 text-red-600 font-bold mb-2 text-sm">
+                                                <ShieldCheck size={16}/> 성능 저하 경고
+                                            </div>
+                                            <p className="text-xs text-gray-700 mb-3">모터 효율이 85% 미만입니다. 베어링 마모가 의심됩니다.</p>
+                                            <button className="w-full bg-[#001738] text-white text-xs py-1.5 rounded hover:bg-[#002a66]">유지보수 가이드 보기</button>
+                                        </div>
                                     </div>
-                                    <p className="text-[10px] text-gray-400 mt-4 text-center">SCADA HMI Integration Screenshot</p>
                                 </div>
+                            </div>
+                        </SlideLayout>
+                    )
+                },
+                // 7. 전략 4 & 5: 환경 개선 및 AI 활용
+                {
+                    id: 'strategy45',
+                    render: () => (
+                        <SlideLayout title="전략 04 & 05: 현장 환경 개선 및 AI 활용">
+                            <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto no-scrollbar">
+                                
+                                {/* 전략 4: 현장 환경 개선 */}
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                                    <h3 className="text-xl font-bold text-[#001738] mb-6 flex items-center gap-2 border-b pb-2">
+                                        <LayoutDashboard size={24} className="text-[#AF251B]"/> 현장 사용자 환경 개선
+                                    </h3>
+                                    <ul className="space-y-6 flex-1">
+                                        <li className="flex gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-none text-[#001738] font-bold text-xs">1</div>
+                                            <div>
+                                                <h4 className="font-bold text-sm text-[#001738]">전체 생산동 중앙 모니터링</h4>
+                                                <p className="text-xs text-gray-500 mt-1">분산된 데이터를 통합하여 중앙에서 실시간 감시</p>
+                                            </div>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-none text-[#001738] font-bold text-xs">2</div>
+                                            <div>
+                                                <h4 className="font-bold text-sm text-[#001738]">데이터 기반 접근 통제</h4>
+                                                <p className="text-xs text-gray-500 mt-1">데이터 암호화 및 예방 통제를 위한 사용자 권한 관리</p>
+                                            </div>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-none text-[#001738] font-bold text-xs">3</div>
+                                            <div>
+                                                <h4 className="font-bold text-sm text-[#001738]">Human Error 방지</h4>
+                                                <p className="text-xs text-gray-500 mt-1">입력 데이터 유효성 자동 검증을 통한 부정/오류 차단</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                {/* 전략 5: AI Sandbox */}
+                                <div className="bg-[#001738] p-6 rounded-2xl shadow-md text-white flex flex-col">
+                                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2 border-b border-white/20 pb-2">
+                                        <Brain size={24} className="text-[#AF251B]"/> AI 활용 샌드박스 제공
+                                    </h3>
+                                    <div className="flex-1 flex flex-col justify-center space-y-6">
+                                        <p className="text-sm text-gray-300 leading-relaxed">
+                                            기존의 제한적인 Code-less 환경을 넘어, 실질적인 AI 활용이 가능한 <strong>데이터 샌드박스(Sandbox)</strong>를 지원합니다.
+                                        </p>
+                                        
+                                        <div className="bg-white/10 p-4 rounded-xl">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <Database size={18} className="text-[#AF251B]"/>
+                                                <span className="font-bold text-sm">Local DB Creation</span>
+                                            </div>
+                                            <p className="text-xs text-gray-400">사용자별 접근 권한이 있는 데이터 중, 분석에 필요한 데이터만 추출하여 로컬 DB화</p>
+                                        </div>
+
+                                        <div className="bg-white/10 p-4 rounded-xl">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <ChartIcon size={18} className="text-[#AF251B]"/>
+                                                <span className="font-bold text-sm">Freedom to Analyze</span>
+                                            </div>
+                                            <p className="text-xs text-gray-400">데이터 과학자가 자유롭게 모델링하고 분석할 수 있는 실질적 연구 환경 보장</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </SlideLayout>
                     )
@@ -285,50 +452,51 @@
 
             return (
                 <div className="min-h-screen flex items-center justify-center p-2 md:p-8 font-sans text-[#001738]">
-                    {/* 16:9 Aspect Ratio Container */}
-                    <div className="w-full max-w-6xl aspect-video bg-white shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden flex flex-col relative">
+                    {/* 16:9 Container */}
+                    <div className="w-full max-w-6xl aspect-video bg-white shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden flex flex-col relative border border-gray-200">
                         
-                        {/* Header Bar */}
+                        {/* Header */}
                         <div className="h-12 md:h-16 border-b flex items-center justify-between px-4 md:px-8 bg-white z-20 flex-none">
                             <div className="flex items-center gap-2 md:gap-3">
-                                <div className="w-6 h-6 md:w-8 md:h-8 bg-[#AF251B] rounded-md md:rounded-lg flex items-center justify-center text-white font-bold text-[10px] md:text-xs italic">YH</div>
+                                <div className="w-6 h-6 md:w-8 md:h-8 bg-[#AF251B] rounded-md md:rounded-lg flex items-center justify-center text-white font-bold text-[10px] md:text-xs italic shadow-sm">YH</div>
                                 <span className="font-bold text-sm md:text-lg tracking-tight">YUHAN <span className="text-[#AF251B]">DI</span> PROJECT</span>
                             </div>
                             <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm font-medium">
-                                <span className="px-2 py-1 md:px-3 md:py-1 bg-gray-100 rounded-full hidden sm:inline-block">Phase 2: 고도화 전략</span>
+                                <span className="px-2 py-1 md:px-3 md:py-1 bg-gray-100 rounded-full hidden sm:inline-block text-[#001738]">Phase 2: 고도화 전략</span>
                                 <div className="w-px h-3 md:h-4 bg-gray-300 hidden sm:block"></div>
                                 <span className="text-gray-400 italic">Solution: COPA-DATA zenon</span>
                             </div>
                         </div>
 
-                        {/* Content Area */}
+                        {/* Content */}
                         <div className="flex-1 relative overflow-hidden bg-white">
                             {slides[activeSlide].render()}
                         </div>
 
-                        {/* Navigation Controls */}
+                        {/* Footer Controls */}
                         <div className="h-14 md:h-20 bg-gray-50 border-t flex items-center justify-between px-4 md:px-8 z-20 flex-none">
-                            <div className="flex gap-1">
+                            <div className="flex gap-1.5">
                                 {slides.map((_, i) => (
                                     <div 
                                         key={i} 
-                                        className={`h-1 md:h-1.5 transition-all duration-300 rounded-full ${activeSlide === i ? 'w-6 md:w-8 bg-[#AF251B]' : 'w-2 bg-gray-300'}`}
+                                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeSlide === i ? 'w-8 bg-[#AF251B]' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
+                                        onClick={() => setActiveSlide(i)}
                                     />
                                 ))}
                             </div>
-                            <div className="flex gap-2 md:gap-4">
+                            <div className="flex gap-3">
                                 <button 
                                     onClick={prevSlide}
-                                    className="px-4 py-1.5 md:px-6 md:py-2 rounded-lg md:rounded-xl border border-gray-300 hover:bg-gray-100 transition-colors font-bold text-xs md:text-sm"
+                                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors font-bold text-xs md:text-sm text-gray-600"
                                 >
                                     PREV
                                 </button>
                                 <button 
                                     onClick={nextSlide}
-                                    className="px-4 py-1.5 md:px-6 md:py-2 rounded-lg md:rounded-xl bg-[#001738] text-white hover:bg-[#002a66] transition-colors font-bold text-xs md:text-sm flex items-center gap-2"
+                                    className="px-5 py-2 rounded-lg bg-[#001738] text-white hover:bg-[#002a66] transition-colors font-bold text-xs md:text-sm flex items-center gap-2 shadow-lg"
                                 >
                                     {activeSlide === slides.length - 1 ? 'RESTART' : 'NEXT'}
-                                    <ChevronRight size={14} className="md:w-4 md:h-4" />
+                                    <ChevronRight size={14} />
                                 </button>
                             </div>
                         </div>
