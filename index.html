@@ -1,583 +1,289 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head> 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>통합 관리 대장</title>
-    <!-- Tailwind CSS CDN 로드 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons 로드 -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* Inter 폰트 사용 설정 및 기본 스타일 */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb;
-            color: #1f2937;
-        }
-        /* 스크롤바 커스터마이징 (선택 사항) */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #d1d5db;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background-color: #f3f4f6;
-        }
-        /* Hidden input label styling */
-        .input-label-style {
-            @apply block text-sm font-medium text-gray-700 mb-1;
-        }
-        /* Input styling */
-        .input-field-style {
-            @apply w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-shadow;
-        }
-    </style>
-</head>
-<body class="p-4 md:p-8">
+import React, { useState, useEffect } from 'react';
+import { 
+  ShieldCheck, 
+  Activity, 
+  Database, 
+  FileCheck, 
+  Lock, 
+  Search, 
+  LineChart as ChartIcon, 
+  CheckCircle2, 
+  AlertTriangle,
+  ChevronRight,
+  Monitor
+} from 'lucide-react';
 
-    <!-- 제목 및 설명 -->
-    <header class="mb-8">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800 mb-2 flex items-center">
-            <i data-lucide="clipboard-list" class="w-8 h-8 mr-2"></i>
-            통합 설비/자재 관리 대장
-        </h1>
-        <p class="text-gray-600 text-lg">기계, 소모품, 자재, 법정 주기 관리 현황 목록입니다.</p>
-    </header>
+const App = () => {
+  const [activeSlide, setActiveSlide] = useState(0);
 
-    <!-- 메인 컨텐츠 영역 -->
-    <main>
-        <!-- 탭 메뉴 -->
-        <div class="mb-6 flex border-b border-gray-200 overflow-x-auto custom-scrollbar">
-            <button class="tab-button flex-shrink-0 px-4 py-3 text-sm md:text-base font-medium text-gray-600 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300 transition-colors duration-200 active-tab" onclick="openTab('dashboard', event)">
-                <i data-lucide="calculator" class="w-4 h-4 mr-2 inline-block"></i> 현황 요약
-            </button>
-            <button class="tab-button flex-shrink-0 px-4 py-3 text-sm md:text-base font-medium text-gray-600 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300 transition-colors duration-200" onclick="openTab('machine', event)">
-                <i data-lucide="cog" class="w-4 h-4 mr-2 inline-block"></i> 기계/설비 목록
-            </button>
-            <button class="tab-button flex-shrink-0 px-4 py-3 text-sm md:text-base font-medium text-gray-600 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300 transition-colors duration-200" onclick="openTab('supplies', event)">
-                <i data-lucide="package" class="w-4 h-4 mr-2 inline-block"></i> 소모품/자재 목록
-            </button>
-            <button class="tab-button flex-shrink-0 px-4 py-3 text-sm md:text-base font-medium text-gray-600 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300 transition-colors duration-200" onclick="openTab('legal', event)">
-                <i data-lucide="scale" class="w-4 h-4 mr-2 inline-block"></i> 법정 주기 목록
-            </button>
-             <button class="tab-button flex-shrink-0 px-4 py-3 text-sm md:text-base font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-300 transition-colors duration-200" onclick="openTab('register', event)">
-                <i data-lucide="plus-circle" class="w-4 h-4 mr-2 inline-block"></i> 신규 등록
-            </button>
+  // Common Layout Component for standard slides to prevent overlap
+  const SlideLayout = ({ title, children }) => (
+    <div className="h-full w-full flex flex-col p-6 md:p-10 relative">
+      <div className="flex-none mb-4 md:mb-8 z-10">
+        <h2 className="text-2xl md:text-3xl font-black text-[#001738] flex items-center gap-3">
+          <span className="w-2 h-6 md:h-8 bg-[#AF251B]"></span>
+          {title}
+        </h2>
+      </div>
+      <div className="flex-1 min-h-0 relative">
+        {children}
+      </div>
+    </div>
+  );
+
+  const slides = [
+    {
+      id: 'title',
+      render: () => (
+        <div className="flex flex-col items-center justify-center h-full text-white bg-[#001738] p-4 text-center">
+          <div className="mb-6 md:mb-8 w-16 md:w-24 h-1 bg-[#AF251B]"></div>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Data Integrity System</h1>
+          <h2 className="text-lg md:text-2xl font-light opacity-80">Project Proposal for Yuhan Chemical</h2>
+          <div className="mt-8 md:mt-16 flex items-center gap-8 md:gap-12">
+            <div className="flex flex-col items-center opacity-60">
+              <ShieldCheck size={32} className="md:w-12 md:h-12" />
+              <span className="mt-2 text-xs md:text-sm">Security</span>
+            </div>
+            <div className="flex flex-col items-center opacity-60">
+              <Database size={32} className="md:w-12 md:h-12" />
+              <span className="mt-2 text-xs md:text-sm">Traceability</span>
+            </div>
+            <div className="flex flex-col items-center opacity-60">
+              <FileCheck size={32} className="md:w-12 md:h-12" />
+              <span className="mt-2 text-xs md:text-sm">Compliance</span>
+            </div>
+          </div>
         </div>
-
-        <!-- 탭 내용 영역 -->
-        <div id="tab-content">
-
-            <!-- 1. 현황 요약 -->
-            <div id="dashboard" class="tab-pane active-pane">
-                <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- 카드 1: 총 기계/설비 수 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-transform hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-medium text-gray-500">총 설비 수</p>
-                            <i data-lucide="factory" class="w-6 h-6 text-blue-500"></i>
-                        </div>
-                        <p class="text-3xl font-bold mt-2" id="total-machines">0</p>
-                        <p class="text-xs text-gray-400 mt-1">유틸리티 및 제조 장비 통합</p>
+      )
+    },
+    {
+      id: 'definition',
+      render: () => (
+        <SlideLayout title="유한화학의 DI System이란?">
+          <div className="h-full flex flex-col justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center h-full">
+              <div className="space-y-4 md:space-y-8 flex flex-col justify-center">
+                <div className="border-l-4 border-[#AF251B] pl-4 md:pl-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-[#001738] mb-2">자산가치증명 시스템</h3>
+                  <p className="text-sm md:text-lg text-gray-700 leading-relaxed">
+                    제품 생산 및 연구 과정의 신뢰성을 입증하여 유한화학의 핵심 유/무형 자산을 보호하고 그 가치를 데이터로 증명합니다.
+                  </p>
+                </div>
+                <div className="border-l-4 border-[#AF251B] pl-4 md:pl-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-[#001738] mb-2">보안 및 통제 활동</h3>
+                  <p className="text-sm md:text-lg text-gray-700 leading-relaxed">
+                    데이터의 누락, 조작, 오염을 차단하기 위한 기술적 통제(Technical Controls)를 통해 완벽한 신뢰 프로세스를 구축합니다.
+                  </p>
+                </div>
+              </div>
+              <div className="h-full max-h-[300px] md:max-h-none bg-gray-100 rounded-2xl p-4 md:p-8 flex items-center justify-center relative overflow-hidden">
+                 <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <Lock size={80} className="md:w-[120px] md:h-[120px]" />
+                 </div>
+                 <div className="z-10 text-center">
+                    <div className="bg-[#AF251B] text-white p-4 md:p-6 rounded-full inline-block mb-4 shadow-lg">
+                      <ShieldCheck size={32} className="md:w-10 md:h-10" />
                     </div>
-
-                    <!-- 카드 2: 점검 필요 설비 수 (C/D 등급) -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-transform hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-medium text-gray-500">주의/경고 등급 설비</p>
-                            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500"></i>
-                        </div>
-                        <p class="text-3xl font-bold mt-2 text-red-600" id="critical-machines">0</p>
-                        <p class="text-xs text-gray-400 mt-1">긴급 조치 필요 (C, D등급)</p>
+                    <p className="font-bold text-lg md:text-xl text-[#001738]">글로벌 규제 대응 최적화</p>
+                    <p className="text-xs md:text-sm text-gray-500 mt-2">FDA 21 CFR Part 11 / EU Annex 11 Compliance</p>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </SlideLayout>
+      )
+    },
+    {
+      id: 'alcoa',
+      render: () => (
+        <SlideLayout title="ALCOA++ 기반 데이터 관리 전략">
+          <div className="h-full flex flex-col">
+            <div className="bg-[#001738] p-4 md:p-8 rounded-2xl md:rounded-3xl text-white mb-4 md:mb-8 flex-none shadow-lg">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl md:text-3xl font-bold">ALCOA++</h3>
+                  <p className="opacity-70 text-sm md:text-base">The Gold Standard for Data Integrity</p>
+                </div>
+                <div className="flex gap-1 md:gap-2">
+                   {['A','L','C','O','A','+','+'].map((t, i) => (
+                     <div key={i} className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-[#AF251B] font-bold rounded-lg text-sm md:text-base shadow-sm">{t}</div>
+                   ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm overflow-y-auto content-start">
+               {[
+                 {k: 'Attributable', v: '기록 주체 명확화'},
+                 {k: 'Legible', v: '판독성 및 보존성'},
+                 {k: 'Contemporaneous', v: '실시간 기록'},
+                 {k: 'Original', v: '원본성 유지'},
+                 {k: 'Accurate', v: '정확성 보장'},
+                 {k: 'Complete', v: '완전한 기록'},
+                 {k: 'Consistent', v: '일관된 데이터'},
+                 {k: 'Enduring', v: '영구적 보관'}
+               ].map((item, idx) => (
+                 <div key={idx} className="border p-3 md:p-4 rounded-xl hover:shadow-md transition-shadow bg-white flex flex-col justify-center">
+                   <p className="text-[#AF251B] font-bold mb-1">{item.k}</p>
+                   <p className="text-[#001738] text-opacity-80">{item.v}</p>
+                 </div>
+               ))}
+            </div>
+            <p className="mt-4 text-center text-gray-400 text-xs italic flex-none hidden md:block">[이미지: ALCOA++ 원칙의 전 주기적 순환 구조도]</p>
+          </div>
+        </SlideLayout>
+      )
+    },
+    {
+      id: 'strategy1',
+      render: () => (
+        <SlideLayout title="고도화 전략 01: 원클릭 Audit Trail 조회">
+          <div className="h-full flex flex-col">
+            <div className="flex-1 bg-white border rounded-2xl shadow-inner p-4 md:p-6 overflow-hidden relative flex flex-col">
+              <div className="flex justify-between items-center mb-4 flex-none">
+                 <h4 className="font-bold flex items-center gap-2 text-sm md:text-base"><ChartIcon size={20} className="text-[#AF251B]"/> Real-time Process Trend</h4>
+                 <span className="text-[10px] md:text-xs bg-red-100 text-red-600 px-2 py-1 rounded animate-pulse">Deviation Detected!</span>
+              </div>
+              
+              {/* Mock Chart Area - Responsive Height */}
+              <div className="flex-1 min-h-[120px] bg-slate-50 relative flex items-end px-4 gap-1 border-b pb-1">
+                 {[40, 45, 42, 85, 43, 41, 39, 44].map((h, i) => (
+                   <div 
+                     key={i} 
+                     className={`flex-1 transition-all cursor-pointer ${h > 60 ? 'bg-[#AF251B]' : 'bg-[#001738] opacity-40'} hover:opacity-100 rounded-t-sm relative group`}
+                     style={{height: `${h}%`}}
+                     onClick={() => alert(`Timestamp: 2024-05-20 14:02:${30+i}\nEvent: Setpoint Change`)}
+                   >
+                     {h > 60 && (
+                       <div className="absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce">
+                         <Search size={16} className="text-[#AF251B] md:w-6 md:h-6"/>
+                       </div>
+                     )}
+                     <div className="opacity-0 group-hover:opacity-100 absolute bottom-0 left-1/2 -translate-x-1/2 text-[8px] bg-black text-white p-1 rounded whitespace-nowrap z-20 pointer-events-none">
+                        Click to Analyze
+                     </div>
+                   </div>
+                 ))}
+              </div>
+              
+              <div className="mt-4 flex-none">
+                <h4 className="font-bold text-xs md:text-sm mb-2 text-gray-500">Linked Audit Trail / Alarm List</h4>
+                <div className="text-[10px] md:text-xs w-full border rounded shadow-sm bg-white">
+                  <div className="bg-gray-100 grid grid-cols-4 p-2 font-bold border-b">
+                    <span>Timestamp</span><span>User</span><span>Action</span><span>Reason</span>
+                  </div>
+                  <div className="grid grid-cols-4 p-2 border-b bg-red-50 hover:bg-red-100 cursor-pointer transition-colors">
+                    <span>14:02:33</span><span>Yuhan_OP_01</span><span>Value Changed (42 {'->'} 85)</span><span>Emergency Adjust</span>
+                  </div>
+                  <div className="grid grid-cols-4 p-2 text-gray-400">
+                    <span>14:02:15</span><span>System</span><span>Login Success</span><span>-</span>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute bottom-2 right-4 text-[#AF251B] font-bold text-[10px] md:text-xs">
+                Trend Point 원클릭 시 이력 즉시 동기화
+              </div>
+            </div>
+          </div>
+        </SlideLayout>
+      )
+    },
+    {
+      id: 'strategy2',
+      render: () => (
+        <SlideLayout title="고도화 전략 02: Golden Batch Modeling">
+          <div className="h-full flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-8 overflow-y-auto md:overflow-hidden">
+            <div className="space-y-4 md:space-y-6 flex flex-col">
+              <div className="bg-[#001738] p-4 md:p-6 rounded-2xl text-white shadow-md">
+                <h4 className="text-lg md:text-xl font-bold mb-2 md:mb-4 flex items-center gap-2"><CheckCircle2 size={24} className="text-[#AF251B]"/> 나이스 품질 공정 데이터 세트</h4>
+                <p className="text-xs md:text-sm opacity-80 leading-relaxed">
+                  과거의 생산 이력 중 가장 품질이 좋았던 'Golden Batch' 데이터를 표준 세트로 기록하고 관리합니다.
+                </p>
+              </div>
+              <div className="border p-4 md:p-6 rounded-2xl flex-1 bg-white">
+                <h4 className="font-bold mb-2 md:mb-4 flex items-center gap-2 text-[#001738]"><Monitor size={20}/> SCADA 화면 반영 및 모니터링</h4>
+                <ul className="space-y-2 md:space-y-3 text-xs md:text-sm">
+                  <li className="flex items-center gap-2 text-gray-600"><ChevronRight size={14} className="text-[#AF251B]"/> 실시간 공정 수치 vs Golden Batch 편차 가시화</li>
+                  <li className="flex items-center gap-2 text-gray-600"><ChevronRight size={14} className="text-[#AF251B]"/> 체크보드 형태의 일치도 모니터링 대시보드</li>
+                  <li className="flex items-center gap-2 text-gray-600"><ChevronRight size={14} className="text-[#AF251B]"/> 한계치 이탈 전 사전 경고 알람 (Predictive)</li>
+                </ul>
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 p-4 md:p-6 flex flex-col min-h-[200px]">
+              <h5 className="text-center font-bold text-[#001738] mb-4 text-sm md:text-base">Quality Matching Checkboard</h5>
+              <div className="grid grid-cols-3 gap-2 md:gap-4 flex-1 content-start">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white border rounded-xl p-2 md:p-4 flex flex-col items-center justify-center shadow-sm hover:scale-105 transition-transform">
+                    <span className="text-[8px] md:text-[10px] text-gray-400">Parameter {i+1}</span>
+                    <span className="font-bold text-sm md:text-lg text-[#001738]">{95 + i}%</span>
+                    <div className="w-full bg-gray-200 h-1 md:h-1.5 mt-2 rounded-full overflow-hidden">
+                       <div className="bg-green-500 h-full" style={{width: `${95+i}%`}}></div>
                     </div>
-
-                    <!-- 카드 3: 소모품 재고 부족 항목 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-transform hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-medium text-gray-500">재고 부족 소모품/자재</p>
-                            <i data-lucide="package-minus" class="w-6 h-6 text-orange-500"></i>
-                        </div>
-                        <p class="text-3xl font-bold mt-2 text-orange-600" id="low-stock-items">0</p>
-                        <p class="text-xs text-gray-400 mt-1">안전 재고 이하 품목</p>
-                    </div>
-
-                    <!-- 카드 4: 법정 검사 임박 항목 (3개월 이내) -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-transform hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-medium text-gray-500">법정 검사 임박/만료</p>
-                            <i data-lucide="calendar-check" class="w-6 h-6 text-amber-500"></i>
-                        </div>
-                        <p class="text-3xl font-bold mt-2 text-amber-600" id="imminent-legal-checks">0</p>
-                        <p class="text-xs text-gray-400 mt-1">3개월 이내 예정 또는 만료</p>
-                    </div>
-                </section>
-                
-                <section class="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
-                    <p class="text-lg font-semibold text-blue-700">📌 상세 목록은 상단의 탭을 선택하여 확인해주세요.</p>
-                </section>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-gray-400 mt-4 text-center">SCADA HMI Integration Screenshot</p>
             </div>
+          </div>
+        </SlideLayout>
+      )
+    }
+  ];
 
-            <!-- 2. 기계/설비 목록 -->
-            <div id="machine" class="tab-pane hidden">
-                <h2 class="text-2xl font-bold text-blue-700 mb-4">전체 기계/설비 목록</h2>
-                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">구분</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리번호</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">설비명(국문)</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">설치 장소</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제조사/모델</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">최종 평가</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">점검 주기</th>
-                            </tr>
-                        </thead>
-                        <tbody id="machine-table-body" class="bg-white divide-y divide-gray-200 text-sm">
-                            <!-- 데이터 없음 -->
-                            <tr><td colspan="7" class="text-center py-4 text-gray-500">데이터가 없습니다.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  const nextSlide = () => setActiveSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
-            <!-- 3. 소모품/자재 목록 -->
-            <div id="supplies" class="tab-pane hidden">
-                <h2 class="text-2xl font-bold text-blue-700 mb-4">소모품/자재 목록 및 재고 현황</h2>
-                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">구분</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">품명</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">규격</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">총 재고</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">재고 상태</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">교체 주기</th>
-                            </tr>
-                        </thead>
-                        <tbody id="supplies-table-body" class="bg-white divide-y divide-gray-200 text-sm">
-                            <!-- 데이터 없음 -->
-                            <tr><td colspan="6" class="text-center py-4 text-gray-500">데이터가 없습니다.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 4. 법정 주기 목록 -->
-            <div id="legal" class="tab-pane hidden">
-                <h2 class="text-2xl font-bold text-blue-700 mb-4">법정 선임/검사/계약 관리 현황</h2>
-                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">분류</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">법정 구분</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">대상물</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주기</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">최근일</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">차기일</th>
-                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">남은 기간</th>
-                            </tr>
-                        </thead>
-                        <tbody id="legal-table-body" class="bg-white divide-y divide-gray-200 text-sm">
-                            <!-- 데이터 없음 -->
-                            <tr><td colspan="7" class="text-center py-4 text-gray-500">데이터가 없습니다.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 5. 신규 등록 탭 -->
-            <div id="register" class="tab-pane hidden">
-                <h2 class="text-2xl font-bold text-green-700 mb-6">신규 관리 항목 등록</h2>
-
-                <!-- 등록 항목 선택 -->
-                <div class="mb-6 flex space-x-4 border-b pb-4">
-                    <button id="btn-reg-machine" class="reg-type-button px-4 py-2 text-sm font-semibold rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors" onclick="showRegistrationForm('machine-reg')">
-                        <i data-lucide="cog" class="w-4 h-4 mr-2 inline-block"></i> 기계/설비
-                    </button>
-                    <button id="btn-reg-supplies" class="reg-type-button px-4 py-2 text-sm font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" onclick="showRegistrationForm('supplies-reg')">
-                        <i data-lucide="package" class="w-4 h-4 mr-2 inline-block"></i> 소모품/자재
-                    </button>
-                    <button id="btn-reg-legal" class="reg-type-button px-4 py-2 text-sm font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" onclick="showRegistrationForm('legal-reg')">
-                        <i data-lucide="scale" class="w-4 h-4 mr-2 inline-block"></i> 법정 주기
-                    </button>
-                </div>
-                
-                <!-- 등록 폼 컨테이너 -->
-                <div id="registration-forms-container" class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                    <div id="registration-message" class="hidden p-3 mb-4 text-center text-sm font-medium rounded-lg" role="alert"></div>
-
-                    <!-- 기계/설비 등록 폼 -->
-                    <form id="machine-reg" class="reg-form" onsubmit="submitRegistration(event, 'machine')">
-                        <h3 class="text-xl font-bold mb-4 text-blue-600">기계/설비 등록</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- 고정 필드 -->
-                            <div>
-                                <label for="m-type" class="input-label-style">설비 타입/구분 <span class="text-red-500">*</span></label>
-                                <select id="m-type" name="type" class="input-field-style" onchange="generateDynamicFields(this.value)" required>
-                                    <option value="">-- 타입을 선택하세요 --</option>
-                                    <option value="Pump">펌프 (Pump)</option>
-                                    <option value="AHU">공조기 (AHU/HVAC)</option>
-                                    <option value="Reactor">반응기 (Reactor)</option>
-                                    <option value="Tank">저장 탱크 (Tank)</option>
-                                    <option value="General">기타 일반 장비 (General)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="m-mgmtNum" class="input-label-style">관리번호 <span class="text-red-500">*</span></label>
-                                <input type="text" id="m-mgmtNum" name="mgmtNum" class="input-field-style" required>
-                            </div>
-                            <div>
-                                <label for="m-nameKr" class="input-label-style">설비명(국문) <span class="text-red-500">*</span></label>
-                                <input type="text" id="m-nameKr" name="nameKr" class="input-field-style" required>
-                            </div>
-                            <div>
-                                <label for="m-location" class="input-label-style">설치 장소</label>
-                                <input type="text" id="m-location" name="location" class="input-field-style">
-                            </div>
-                            <div>
-                                <label for="m-manufacturer" class="input-label-style">제조사</label>
-                                <input type="text" id="m-manufacturer" name="manufacturer" class="input-field-style">
-                            </div>
-                            <div>
-                                <label for="m-finalGrade" class="input-label-style">최종 평가 등급</label>
-                                <select id="m-finalGrade" name="finalGrade" class="input-field-style">
-                                    <option value="A">A (양호)</option>
-                                    <option value="B">B (보통)</option>
-                                    <option value="C">C (주의)</option>
-                                    <option value="D">D (경고)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="m-checkPeriod" class="input-label-style">점검 주기</label>
-                                <input type="text" id="m-checkPeriod" name="checkPeriod" class="input-field-style" placeholder="예: 1회/년, 월 점검">
-                            </div>
-                        </div>
-
-                        <!-- 동적으로 생성될 상세 필드 영역 -->
-                        <div id="dynamic-fields-machine" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-200">
-                            <p class="text-gray-500 col-span-2">설비 타입을 선택하면 해당 항목에 맞는 상세 스펙 입력 필드가 나타납니다.</p>
-                        </div>
-                        
-                        <div class="mt-6 text-right">
-                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md">
-                                기계/설비 등록
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- 소모품/자재 등록 폼 (이전과 동일) -->
-                    <form id="supplies-reg" class="reg-form hidden" onsubmit="submitRegistration(event, 'supplies')">
-                        <h3 class="text-xl font-bold mb-4 text-green-600">소모품/자재 등록</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="s-type" class="input-label-style">구분 (소모품/자재) <span class="text-red-500">*</span></label>
-                                <select id="s-type" name="type" class="input-field-style" required>
-                                    <option value="소모품">소모품</option>
-                                    <option value="자재">자재</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="s-name" class="input-label-style">품명 <span class="text-red-500">*</span></label>
-                                <input type="text" id="s-name" name="name" class="input-field-style" required>
-                            </div>
-                            <div>
-                                <label for="s-spec" class="input-label-style">규격/모델</label>
-                                <input type="text" id="s-spec" name="spec" class="input-field-style">
-                            </div>
-                            <div>
-                                <label for="s-totalStock" class="input-label-style">총 재고 (수량) <span class="text-red-500">*</span></label>
-                                <input type="number" id="s-totalStock" name="totalStock" class="input-field-style" min="0" required>
-                            </div>
-                            <div>
-                                <label for="s-safeStock" class="input-label-style">안전 재고 기준</label>
-                                <input type="number" id="s-safeStock" name="safeStock" class="input-field-style" min="0">
-                            </div>
-                            <div>
-                                <label for="s-period" class="input-label-style">교체/점검 주기</label>
-                                <input type="text" id="s-period" name="period" class="input-field-style" placeholder="예: 1회/월, 수시">
-                            </div>
-                        </div>
-                        <div class="mt-6 text-right">
-                            <button type="submit" class="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md">
-                                소모품/자재 등록
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- 법정 주기 등록 폼 (이전과 동일) -->
-                    <form id="legal-reg" class="reg-form hidden" onsubmit="submitRegistration(event, 'legal')">
-                        <h3 class="text-xl font-bold mb-4 text-amber-600">법정 주기 항목 등록</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="l-type" class="input-label-style">법정 구분 <span class="text-red-500">*</span></label>
-                                <input type="text" id="l-type" name="type" class="input-field-style" required placeholder="예: 정기검사, 안전관리자 선임">
-                            </div>
-                            <div>
-                                <label for="l-target" class="input-label-style">대상물/대상</label>
-                                <input type="text" id="l-target" name="target" class="input-field-style" placeholder="예: 특정가스사용시설, OOO호 냉동기">
-                            </div>
-                            <div>
-                                <label for="l-period" class="input-label-style">주기</label>
-                                <input type="text" id="l-period" name="period" class="input-field-style" placeholder="예: 1년, 3년">
-                            </div>
-                            <div>
-                                <label for="l-recentDate" class="input-label-style">최근 검사일</label>
-                                <input type="date" id="l-recentDate" name="recentDate" class="input-field-style">
-                            </div>
-                            <div>
-                                <label for="l-nextDate" class="input-label-style">차기 검사일 <span class="text-red-500">*</span></label>
-                                <input type="date" id="l-nextDate" name="nextDate" class="input-field-style" required>
-                            </div>
-                            <div>
-                                <label for="l-category" class="input-label-style">분류 (법규)</label>
-                                <input type="text" id="l-category" name="category" class="input-field-style" placeholder="예: 가스, 에너지, 소방">
-                            </div>
-                        </div>
-                        <div class="mt-6 text-right">
-                            <button type="submit" class="px-6 py-2 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors shadow-md">
-                                법정 주기 등록
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-        </div>
-    </main>
-    
-    <script>
-        // Lucide Icons 초기화
-        lucide.createIcons();
+  return (
+    <div className="min-h-screen bg-slate-200 flex items-center justify-center p-2 md:p-8 font-sans text-[#001738]" style={{ fontFamily: '"Noto Sans", sans-serif' }}>
+      {/* 16:9 Aspect Ratio Container */}
+      <div className="w-full max-w-6xl aspect-video bg-white shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden flex flex-col relative">
         
-        // 설비 타입별 상세 스펙 정의 (핵심 로직)
-        const MACHINE_SCHEMAS = {
-            Pump: [
-                { id: 'm-capa', label: '용량', type: 'text', placeholder: '예: 6m³/hr' },
-                { id: 'm-power', label: '동력 (kW)', type: 'number', placeholder: '예: 2.2' },
-                { id: 'm-motor', label: '모터 제조사/모델', type: 'text', placeholder: '예: 두크펌프 XRL5-9' },
-                { id: 'm-pressure', label: '양정/압력 (mH)', type: 'text', placeholder: '예: 70mH' }
-            ],
-            AHU: [
-                { id: 'm-airflow', label: '풍량 (CMH)', type: 'text', placeholder: '예: 10,000 CMH' },
-                { id: 'm-filter', label: '필터 종류', type: 'text', placeholder: '예: Pre, Medium, Hepa' },
-                { id: 'm-temp', label: '온도 범위', type: 'text', placeholder: '예: 15 ~ 25℃' },
-                { id: 'm-zone', label: '적용 구역', type: 'text', placeholder: '예: GMP 1Zone' }
-            ],
-            Reactor: [
-                { id: 'm-volume', label: '용량 (L)', type: 'number', placeholder: '예: 500' },
-                { id: 'm-tempRange', label: '온도 사용 범위', type: 'text', placeholder: '예: -20 ~ 150℃' },
-                { id: 'm-pressureRange', label: '최대 압력', type: 'text', placeholder: '예: 5 bar' },
-                { id: 'm-agitator', label: '교반기 사양', type: 'text', placeholder: '예: 1HP, 120 RPM' }
-            ],
-            Tank: [
-                { id: 'm-tankVolume', label: '용량 (m³ 또는 L)', type: 'text', placeholder: '예: 10 m³' },
-                { id: 'm-material', label: '재질', type: 'text', placeholder: '예: SUS316L, PE' },
-                { id: 'm-fluid', label: '저장 유체', type: 'text', placeholder: '예: 정제수, 폐수' },
-                { id: 'm-size', label: '크기 (SIZE)', type: 'text', placeholder: '예: ID2200 x 3100H' }
-            ],
-            General: [
-                { id: 'm-specNote', label: '특이/상세 스펙', type: 'textarea', placeholder: '일반 장비의 상세 스펙을 자유롭게 입력하세요.' }
-            ]
-        };
+        {/* Header Bar */}
+        <div className="h-12 md:h-16 border-b flex items-center justify-between px-4 md:px-8 bg-white z-20 flex-none">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-6 h-6 md:w-8 md:h-8 bg-[#AF251B] rounded-md md:rounded-lg flex items-center justify-center text-white font-bold text-[10px] md:text-xs italic">YH</div>
+            <span className="font-bold text-sm md:text-lg tracking-tight">YUHAN <span className="text-[#AF251B]">DI</span> PROJECT</span>
+          </div>
+          <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm font-medium">
+            <span className="px-2 py-1 md:px-3 md:py-1 bg-gray-100 rounded-full hidden sm:inline-block">Phase 2: 고도화 전략</span>
+            <div className="w-px h-3 md:h-4 bg-gray-300 hidden sm:block"></div>
+            <span className="text-gray-400 italic">Solution: COPA-DATA zenon</span>
+          </div>
+        </div>
 
-        // 탭 전환 함수
-        function openTab(tabId, event) {
-            document.querySelectorAll('.tab-pane').forEach(pane => {
-                pane.classList.add('hidden');
-                pane.classList.remove('active-pane');
-            });
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(tabId).classList.add('active-pane');
+        {/* Content Area */}
+        <div className="flex-1 relative overflow-hidden bg-white">
+          {slides[activeSlide].render()}
+        </div>
 
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active-tab', 'text-blue-600', 'border-blue-600', 'text-green-600', 'border-green-600');
-                button.classList.add('text-gray-600', 'border-transparent');
-            });
-            
-            const target = event ? event.currentTarget : document.querySelector(`.tab-button[onclick*="'${tabId}'"]`);
-            if (target) {
-                 if (tabId === 'register') {
-                    target.classList.add('text-green-600', 'border-green-600');
-                } else {
-                    target.classList.add('text-blue-600', 'border-blue-600');
-                }
-                target.classList.remove('text-gray-600', 'border-transparent');
-            }
+        {/* Navigation Controls */}
+        <div className="h-14 md:h-20 bg-gray-50 border-t flex items-center justify-between px-4 md:px-8 z-20 flex-none">
+          <div className="flex gap-1">
+            {slides.map((_, i) => (
+              <div 
+                key={i} 
+                className={`h-1 md:h-1.5 transition-all duration-300 rounded-full ${activeSlide === i ? 'w-6 md:w-8 bg-[#AF251B]' : 'w-2 bg-gray-300'}`}
+              />
+            ))}
+          </div>
+          <div className="flex gap-2 md:gap-4">
+            <button 
+              onClick={prevSlide}
+              className="px-4 py-1.5 md:px-6 md:py-2 rounded-lg md:rounded-xl border border-gray-300 hover:bg-gray-100 transition-colors font-bold text-xs md:text-sm"
+            >
+              PREV
+            </button>
+            <button 
+              onClick={nextSlide}
+              className="px-4 py-1.5 md:px-6 md:py-2 rounded-lg md:rounded-xl bg-[#001738] text-white hover:bg-[#002a66] transition-colors font-bold text-xs md:text-sm flex items-center gap-2"
+            >
+              {activeSlide === slides.length - 1 ? 'RESTART' : 'NEXT'}
+              <ChevronRight size={14} className="md:w-4 md:h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-            // '신규 등록' 탭으로 전환 시 기본 폼(기계/설비) 표시
-            if (tabId === 'register') {
-                showRegistrationForm('machine-reg');
-            }
-        }
-
-        // 등록 폼 전환 함수
-        function showRegistrationForm(formId) {
-            document.querySelectorAll('.reg-form').forEach(form => {
-                form.classList.add('hidden');
-            });
-            document.getElementById(formId).classList.remove('hidden');
-
-            document.querySelectorAll('.reg-type-button').forEach(button => {
-                button.classList.remove('bg-blue-100', 'text-blue-700', 'bg-green-100', 'text-green-700', 'bg-amber-100', 'text-amber-700');
-                button.classList.add('bg-gray-100', 'text-gray-700');
-            });
-
-            const buttonId = formId.replace('-reg', '');
-            const targetButton = document.getElementById(`btn-reg-${buttonId}`);
-            if (targetButton) {
-                 if (buttonId === 'machine') {
-                    targetButton.classList.remove('bg-gray-100', 'text-gray-700');
-                    targetButton.classList.add('bg-blue-100', 'text-blue-700');
-                    // 기계 등록 폼이 선택되면 동적 필드를 다시 생성 (혹시 초기화되지 않았을 경우 대비)
-                    const machineType = document.getElementById('m-type').value;
-                    generateDynamicFields(machineType);
-                } else if (buttonId === 'supplies') {
-                    targetButton.classList.remove('bg-gray-100', 'text-gray-700');
-                    targetButton.classList.add('bg-green-100', 'text-green-700');
-                } else if (buttonId === 'legal') {
-                    targetButton.classList.remove('bg-gray-100', 'text-gray-700');
-                    targetButton.classList.add('bg-amber-100', 'text-amber-700');
-                }
-            }
-            
-            // 메시지 숨기기
-            document.getElementById('registration-message').classList.add('hidden');
-        }
-
-        // 동적 필드 생성 함수 (핵심 로직)
-        function generateDynamicFields(selectedType) {
-            const container = document.getElementById('dynamic-fields-machine');
-            container.innerHTML = ''; // 기존 필드 초기화
-
-            if (!selectedType || selectedType === 'General') {
-                 // General 타입이거나 선택 안 된 경우 기본 메시지 표시
-                 const defaultText = selectedType ? '일반 장비의 특이/상세 스펙을 입력하세요.' : '설비 타입을 선택하면 해당 항목에 맞는 상세 스펙 입력 필드가 나타납니다.';
-                 container.innerHTML = `<p class="text-gray-500 col-span-2">${defaultText}</p>`;
-            }
-
-
-            const fields = MACHINE_SCHEMAS[selectedType] || MACHINE_SCHEMAS['General'];
-            
-            if (selectedType && selectedType !== 'General') {
-                 // 구분선
-                 const divider = document.createElement('div');
-                 divider.className = 'col-span-2 text-lg font-semibold text-gray-700 mt-2 mb-2';
-                 divider.textContent = `${fields[0].label.split(' ')[0]} 상세 스펙 (${selectedType})`;
-                 container.appendChild(divider);
-            }
-
-            fields.forEach(field => {
-                const div = document.createElement('div');
-                div.className = 'flex flex-col';
-                
-                const label = document.createElement('label');
-                label.htmlFor = field.id;
-                label.className = 'input-label-style';
-                label.textContent = field.label;
-                
-                let input;
-                if (field.type === 'textarea') {
-                    input = document.createElement('textarea');
-                    input.rows = 3;
-                } else {
-                    input = document.createElement('input');
-                    input.type = field.type;
-                    input.min = (field.type === 'number' ? '0' : undefined);
-                }
-                
-                input.id = field.id;
-                input.name = field.id.replace('m-', 'spec_'); // 데이터 키를 'spec_' 접두사로 통일
-                input.className = 'input-field-style';
-                input.placeholder = field.placeholder || '';
-                
-                div.appendChild(label);
-                div.appendChild(input);
-                container.appendChild(div);
-            });
-        }
-
-
-        // 등록 처리 함수
-        function submitRegistration(event, type) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const data = { type: type };
-            
-            for (let [key, value] of formData.entries()) {
-                // 동적 필드는 key 이름이 spec_ 로 시작함
-                if (key.startsWith('spec_')) {
-                    // 기계/설비의 상세 스펙은 별도의 객체로 묶어 저장
-                    if (!data.dynamicSpecs) {
-                        data.dynamicSpecs = {};
-                    }
-                    // spec_capa -> capa 로 키 정리
-                    data.dynamicSpecs[key.replace('spec_', '')] = value;
-                } else {
-                    data[key] = value;
-                }
-            }
-
-            const messageBox = document.getElementById('registration-message');
-            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
-
-            try {
-                // 등록 성공 시 콘솔에 출력
-                console.log(`[${type.toUpperCase()} 등록 데이터]`, data);
-
-                messageBox.classList.add('bg-green-100', 'text-green-700');
-                messageBox.textContent = `✅ ${type.toUpperCase()} 항목이 성공적으로 등록되었습니다! (데이터는 콘솔에 출력됨)`;
-                
-                // 폼 초기화 및 동적 필드 초기화
-                form.reset();
-                if (type === 'machine') {
-                     generateDynamicFields(''); // 기계 폼 초기화 시 동적 필드도 초기화
-                }
-
-            } catch (error) {
-                console.error(`[${type.toUpperCase()} 등록 오류]`, error);
-                messageBox.classList.add('bg-red-100', 'text-red-700');
-                messageBox.textContent = `❌ ${type.toUpperCase()} 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.`;
-            }
-
-        }
-
-        // --- 데이터 초기화 함수 (데이터 비움 상태 유지) ---
-        function initializeCardValues() {
-            document.getElementById('total-machines').textContent = '0';
-            document.getElementById('critical-machines').textContent = '0';
-            document.getElementById('low-stock-items').textContent = '0';
-            document.getElementById('imminent-legal-checks').textContent = '0';
-        }
-
-        function initializeTables() {
-            const emptyRow = '<tr><td colspan="7" class="text-center py-4 text-gray-500">데이터가 없습니다.</td></tr>';
-            document.getElementById('machine-table-body').innerHTML = emptyRow;
-            document.getElementById('supplies-table-body').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">데이터가 없습니다.</td></tr>';
-            document.getElementById('legal-table-body').innerHTML = emptyRow;
-        }
-
-        // 초기화
-        async function initDashboard() {
-            initializeCardValues();
-            initializeTables();
-
-            window.isDataLoaded = true;
-            openTab('dashboard', null); 
-        }
-
-        // 페이지 로드 시 대시보드 초기화
-        window.onload = function() {
-            initDashboard();
-        };
-
-    </script>
-</body>
-</html>
+export default App;
