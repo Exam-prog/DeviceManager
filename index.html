@@ -160,20 +160,22 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm overflow-y-auto content-start no-scrollbar">
+                                <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 text-xs md:text-sm overflow-y-auto content-start no-scrollbar">
                                     {[
-                                        {k: 'Attributable', v: '기록 주체 명확화'},
-                                        {k: 'Legible', v: '판독성 및 보존성'},
-                                        {k: 'Contemporaneous', v: '실시간 기록'},
-                                        {k: 'Original', v: '원본성 유지'},
-                                        {k: 'Accurate', v: '정확성 보장'},
-                                        {k: 'Complete', v: '완전한 기록'},
-                                        {k: 'Consistent', v: '일관된 데이터'},
-                                        {k: 'Enduring', v: '영구적 보관'}
+                                        {k: 'Attributable', v: '누가, 언제 생성했는지 추적 가능'},
+                                        {k: 'Legible', v: '영구적으로 식별 및 판독 가능'},
+                                        {k: 'Contemporaneous', v: '활동 시점에 실시간으로 기록'},
+                                        {k: 'Original', v: '최초의 원본 또는 인증된 사본'},
+                                        {k: 'Accurate', v: '오류가 없고 정확한 데이터'},
+                                        {k: 'Complete', v: '누락 없이 모든 관련 정보 포함'},
+                                        {k: 'Consistent', v: '데이터의 논리적 순서 및 일관성'},
+                                        {k: 'Enduring', v: '보존 기간 동안 안전하게 유지'},
+                                        {k: 'Available (+)', v: '필요 시 즉시 검색 및 열람 가능'},
+                                        {k: 'Traceability (++)', v: '모든 변경 이력의 완벽한 추적'}
                                     ].map((item, idx) => (
-                                        <div key={idx} className="border p-3 md:p-4 rounded-xl hover:shadow-md transition-shadow bg-white flex flex-col justify-center">
+                                        <div key={idx} className={`border p-3 md:p-4 rounded-xl hover:shadow-md transition-shadow bg-white flex flex-col justify-center ${idx >= 8 ? 'ring-1 ring-[#AF251B] bg-red-50/50' : ''}`}>
                                             <p className="text-[#AF251B] font-bold mb-1">{item.k}</p>
-                                            <p className="text-[#001738] text-opacity-80">{item.v}</p>
+                                            <p className="text-[#001738] text-opacity-80 leading-tight">{item.v}</p>
                                         </div>
                                     ))}
                                 </div>
