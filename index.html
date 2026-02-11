@@ -82,7 +82,6 @@
             const [activeSlide, setActiveSlide] = useState(0);
             const [project, setProject] = useState('yuhan'); // 'yuhan' or 'amkor'
 
-            // 테마 설정
             const theme = project === 'yuhan' ? {
                 primary: '#AF251B',     // 유한 레드
                 secondary: '#001738',   // 제논 네이비
@@ -95,19 +94,16 @@
                 logo: 'AMKOR'
             };
 
-            // 프로젝트 전환 핸들러
             const toggleProject = () => {
                 setProject(prev => prev === 'yuhan' ? 'amkor' : 'yuhan');
-                setActiveSlide(0); // 슬라이드 초기화
+                setActiveSlide(0); 
             };
 
-            // 배경색 동적 변경
             useEffect(() => {
                 document.getElementById('main-body').className = 
                     `flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-500 gap-6 ${project === 'yuhan' ? 'bg-slate-200' : 'bg-gray-200'}`;
             }, [project]);
 
-            // 공통 슬라이드 레이아웃
             const SlideLayout = ({ title, children, isDark = false }) => (
                 <div className={`h-full w-full flex flex-col p-6 md:p-8 relative slide-enter ${isDark ? 'bg-slate-900 text-white' : 'bg-white'}`}>
                     <div className={`flex-none mb-3 z-10 border-b pb-2 ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
@@ -122,9 +118,8 @@
                 </div>
             );
 
-            // 유한화학 슬라이드 (유지)
+            // [유한화학 슬라이드 데이터]
             const yuhanSlides = [
-                // ... (기존 유한화학 슬라이드와 동일)
                 {
                     id: 'title',
                     render: () => (
@@ -450,7 +445,7 @@
                 }
             ];
 
-            // [NEW] 앰코 FEMS 슬라이드 데이터 (시나리오 완벽 반영)
+            // [앰코 FEMS 슬라이드 데이터]
             const amkorSlides = [
                 {
                     id: 'title',
