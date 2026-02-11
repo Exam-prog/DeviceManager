@@ -1160,4 +1160,106 @@
 
             const slides = project === 'yuhan' ? yuhanSlides : amkorSlides;
 
-            const nextSlide =
+            const nextSlide = () => setActiveSlide((prev) => (prev + 1) % slides.length);
+            const prevSlide = () => setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length);
+
+            return (
+                <div className="w-full flex flex-col items-center justify-center">
+                    
+                    {/* 상단 프로젝트 토글 - 외부로 이동 */}
+                    <div className="flex items-center gap-3 glass-panel p-2 rounded-full px-4 shadow-sm mb-6 z-50">
+                         <span className={`text-xs font-bold transition-colors ${project === 'yuhan' ? 'text-[#AF251B]' : 'text-gray-400'}`}>Yuhan Chemical</span>
+                         <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="toggle" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-0" 
+                                style={{borderColor: project === 'yuhan' ? '#AF251B' : '#0D4C8F', left: project === 'yuhan' ? '0' : '50%'}}
+                                checked={project === 'amkor'} 
+                                onChange={toggleProject}
+                            />
+                            <label htmlFor="toggle" className="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 opacity-50" 
+                                style={{backgroundColor: project === 'yuhan' ? '#AF251B' : '#0D4C8F'}}
+                            ></label>
+                        </div>
+                        <span className={`text-xs font-bold transition-colors ${project === 'amkor' ? 'text-[#0D4C8F]' : 'text-gray-400'}`}>Amkor Tech</span>
+                    </div>
+
+                    <div className="w-full max-w-6xl aspect-video bg-white shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden flex flex-col relative border border-gray-200 transition-all duration-500">
+                        {/* Header */}
+                        <div className="h-14 border-b flex items-center justify-between px-6 bg-white z-20 flex-none relative">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs italic shadow-sm transition-colors duration-500" style={{backgroundColor: theme.primary}}>
+                                    {theme.logo}
+                                </div>
+                                <span className="font-bold text-base tracking-tight transition-colors duration-500" style={{color: theme.secondary}}>
+                                    {project === 'yuhan' ? 'YUHAN' : 'AMKOR'} <span style={{color: theme.primary}}>{project === 'yuhan' ? 'DI' : 'FEMS'}</span> PROJECT
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm font-medium">
+                                <span className="px-3 py-1 bg-gray-100 rounded-full text-xs transition-colors duration-500" style={{color: theme.secondary}}>
+                                    {project === 'yuhan' ? 'Phase 2: 고도화 전략' : 'Phase 1: 아키텍처 설계'}
+                                </span>
+                                <div className="w-px h-3 bg-gray-300"></div>
+                                <span className="text-gray-500 italic text-xs">Provided by GANI Co., Ltd.</span>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 relative overflow-hidden bg-white">
+                            {slides[activeSlide].render()}
+                        </div>
+
+                        {/* Footer Controls */}
+                        <div className="h-16 bg-gray-50 border-t flex items-center justify-between px-6 z-20 flex-none">
+                            <div className="flex gap-2">
+                                {slides.map((_, i) => (
+                                    <div 
+                                        key={i} 
+                                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer hover:bg-gray-400`}
+                                        style={{width: activeSlide === i ? '2rem' : '0.5rem', backgroundColor: activeSlide === i ? theme.primary : '#d1d5db'}}
+                                        onClick={() => setActiveSlide(i)}
+                                    />
+                                ))}
+                            </div>
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={prevSlide}
+                                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors font-bold text-sm text-gray-700"
+                                >
+                                    PREV
+                                </button>
+                                <button 
+                                    onClick={nextSlide}
+                                    className="px-5 py-2 rounded-lg text-white transition-colors font-bold text-sm flex items-center gap-2 shadow-md hover:opacity-90"
+                                    style={{backgroundColor: theme.secondary}}
+                                >
+                                    {activeSlide === slides.length - 1 ? 'RESTART' : 'NEXT'}
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* 팝업 모달 */}
+                        {activePopup && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm popup-enter" onClick={closePopup}>
+                                <div className="bg-white rounded-xl shadow-2xl w-[90%] h-[90%] md:w-[800px] md:h-[500px] flex flex-col overflow-hidden animate-fade-in" onClick={e => e.stopPropagation()}>
+                                    <div className="bg-slate-50 p-4 border-b flex justify-between items-center">
+                                        <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+                                            {activePopup.icon} {activePopup.title}
+                                        </h3>
+                                        <button onClick={closePopup} className="text-gray-400 hover:text-red-500 transition-colors"><X size={24}/></button>
+                                    </div>
+                                    <div className="flex-1 p-6 overflow-auto bg-slate-50 relative">
+                                        {renderPopupContent(activePopup)}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
