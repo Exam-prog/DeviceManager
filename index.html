@@ -45,6 +45,9 @@
             linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
             background-size: 20px 20px;
         }
+        /* 팝업 애니메이션 */
+        .popup-enter { animation: popupIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes popupIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="bg-slate-200 flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-500 gap-6" id="main-body">
@@ -77,10 +80,12 @@
         const Download = ({ size = 24, className = "", style={} }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>);
         const ArrowRightCircle = ({ size = 24, className = "", style={} }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 16 4-4-4-4"/></svg>);
         const FileText = ({ size = 24, className = "", style={} }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>);
+        const X = ({ size = 24, className = "", style={} }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>);
 
         const App = () => {
             const [activeSlide, setActiveSlide] = useState(0);
             const [project, setProject] = useState('yuhan'); // 'yuhan' or 'amkor'
+            const [activePopup, setActivePopup] = useState(null); // 팝업 상태
 
             const theme = project === 'yuhan' ? {
                 primary: '#AF251B',     // 유한 레드
@@ -97,6 +102,278 @@
             const toggleProject = () => {
                 setProject(prev => prev === 'yuhan' ? 'amkor' : 'yuhan');
                 setActiveSlide(0); 
+            };
+
+            const closePopup = () => setActivePopup(null);
+
+            // 팝업 내용 렌더링 함수
+            const renderPopupContent = (item) => {
+                const color = project === 'yuhan' ? '#AF251B' : '#0D4C8F';
+                
+                switch(item.type) {
+                    case 'DASHBOARD': // 에너지 현황판 Mockup
+                        return (
+                            <div className="flex flex-col gap-4 h-full">
+                                <div className="grid grid-cols-4 gap-4">
+                                    {[
+                                        {l:'오늘 사용량', v:'12,450 kWh', c:'text-blue-600', u:'전일비 +2%'},
+                                        {l:'목표 달성률', v:'94.5 %', c:'text-green-600', u:'양호'},
+                                        {l:'피크 부하', v:'4,200 kW', c:'text-red-500', u:'14:00 기준'},
+                                        {l:'예상 요금', v:'₩ 1.2M', c:'text-gray-700', u:'당월 누적'}
+                                    ].map((d,i)=>(
+                                        <div key={i} className="bg-white p-4 rounded-lg border shadow-sm flex flex-col justify-between">
+                                            <span className="text-sm text-gray-500">{d.l}</span>
+                                            <span className={`text-xl font-bold ${d.c}`}>{d.v}</span>
+                                            <span className="text-xs text-gray-400 mt-1">{d.u}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex-1 bg-white p-4 rounded-lg border shadow-sm flex flex-col">
+                                    <h4 className="font-bold text-gray-700 mb-4 text-sm">시간대별 전력 사용 현황 (Today)</h4>
+                                    <div className="flex-1 flex items-end gap-2 px-2 border-b border-l border-gray-200">
+                                        {[20,15,10,12,18,35,55,70,85,90,82,75,60,65,70,88,95,80,60,50,40,30,25,20].map((h, i) => (
+                                            <div key={i} className="flex-1 bg-blue-100 rounded-t relative group" style={{height: `${h}%`}}>
+                                                <div className="absolute bottom-0 w-full bg-blue-500 rounded-t" style={{height: `${h*0.6}%`}}></div>
+                                                <div className="opacity-0 group-hover:opacity-100 absolute -top-6 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-1 rounded">{i}시</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-400 mt-2"><span>00:00</span><span>12:00</span><span>23:59</span></div>
+                                </div>
+                            </div>
+                        );
+                    case 'EXCEL': // 상세 비용 산출표 Mockup
+                        return (
+                            <div className="bg-white p-6 rounded-lg shadow-sm border h-full overflow-auto">
+                                <div className="flex justify-between mb-4">
+                                    <h4 className="font-bold text-lg text-gray-800">2024년 2월 전력 요금 상세 내역서</h4>
+                                    <button className="bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"><FileCheck size={12}/> Excel Export</button>
+                                </div>
+                                <table className="w-full text-xs text-right border-collapse border border-gray-200">
+                                    <thead className="bg-gray-100 text-gray-700 text-center font-bold">
+                                        <tr>
+                                            <th className="border p-2">구분</th>
+                                            <th className="border p-2">기본요금</th>
+                                            <th className="border p-2">전력량요금</th>
+                                            <th className="border p-2">기후환경요금</th>
+                                            <th className="border p-2">연료비조정액</th>
+                                            <th className="border p-2 bg-gray-200">청구금액 (VAT별도)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {[
+                                            {n:'경부하', b:'25,000,000', u:'15,400,000', e:'1,200,000', a:'-500,000', t:'41,100,000'},
+                                            {n:'중부하', b:'35,000,000', u:'28,200,000', e:'2,100,000', a:'-800,000', t:'64,500,000'},
+                                            {n:'최대부하', b:'45,000,000', u:'52,100,000', e:'3,500,000', a:'-1,200,000', t:'99,400,000'}
+                                        ].map((r, i) => (
+                                            <tr key={i} className="hover:bg-gray-50">
+                                                <td className="border p-2 text-center font-bold bg-gray-50">{r.n}</td>
+                                                <td className="border p-2">{r.b}</td>
+                                                <td className="border p-2">{r.u}</td>
+                                                <td className="border p-2">{r.e}</td>
+                                                <td className="border p-2 text-red-500">{r.a}</td>
+                                                <td className="border p-2 font-bold bg-blue-50 text-blue-800">{r.t}</td>
+                                            </tr>
+                                        ))}
+                                        <tr className="bg-gray-800 text-white font-bold text-sm">
+                                            <td className="border p-3 text-center">합계</td>
+                                            <td className="border p-3" colSpan="4"></td>
+                                            <td className="border p-3">205,000,000</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p className="text-[10px] text-gray-400 mt-2">* 본 명세서는 한국전력공사 표준 양식을 준수합니다.</p>
+                            </div>
+                        );
+                    case 'CHART': // 사용량 비교 차트
+                        return (
+                            <div className="flex flex-col h-full bg-white p-4 rounded-lg shadow-sm border">
+                                <h4 className="font-bold mb-6 text-gray-700">전년 대비 월별 에너지 사용량 비교 (YoY)</h4>
+                                <div className="flex-1 flex items-end justify-between px-4 gap-4 border-b border-gray-300 pb-2">
+                                    {[60,55,45,40,50,70,85,90,80,65,50,55].map((v, i) => (
+                                        <div key={i} className="flex-1 flex flex-col justify-end gap-1 h-full group">
+                                            <div className="w-full bg-gray-300 rounded-t relative" style={{height: `${v}%`}}>
+                                                <span className="opacity-0 group-hover:opacity-100 absolute -top-4 w-full text-center text-[10px] text-gray-500">23년</span>
+                                            </div>
+                                            <div className="w-full rounded-t relative" style={{height: `${v * (0.8 + Math.random()*0.3)}%`, backgroundColor: color}}>
+                                                <span className="opacity-0 group-hover:opacity-100 absolute -top-4 w-full text-center text-[10px] font-bold" style={{color: color}}>24년</span>
+                                            </div>
+                                            <span className="text-[10px] text-center text-gray-500 mt-1">{i+1}월</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-center gap-6 mt-4 text-xs">
+                                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-gray-300 rounded"></div> 2023년</div>
+                                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded" style={{backgroundColor: color}}></div> 2024년</div>
+                                </div>
+                            </div>
+                        );
+                    case 'PDF': // 3-Year Trend (Line Chart SVG)
+                        return (
+                            <div className="bg-white p-6 rounded-lg shadow-sm border h-full flex flex-col">
+                                <h4 className="font-bold text-lg mb-2">3-Year Energy Intensity Trend</h4>
+                                <p className="text-xs text-gray-500 mb-6">생산량 보정 에너지 원단위 추이 (kWh/Unit)</p>
+                                <div className="flex-1 relative border-l border-b border-gray-300">
+                                    <svg className="w-full h-full p-4 overflow-visible" viewBox="0 0 100 50" preserveAspectRatio="none">
+                                        {/* Grid */}
+                                        <line x1="0" y1="10" x2="100" y2="10" stroke="#eee" strokeWidth="0.5"/>
+                                        <line x1="0" y1="20" x2="100" y2="20" stroke="#eee" strokeWidth="0.5"/>
+                                        <line x1="0" y1="30" x2="100" y2="30" stroke="#eee" strokeWidth="0.5"/>
+                                        {/* Line Chart */}
+                                        <polyline 
+                                            points="0,40 10,38 20,35 30,30 40,25 50,28 60,22 70,18 80,15 90,12 100,10" 
+                                            fill="none" 
+                                            stroke={color} 
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        {/* Points */}
+                                        <circle cx="0" cy="40" r="1.5" fill="white" stroke={color} />
+                                        <circle cx="50" cy="28" r="1.5" fill="white" stroke={color} />
+                                        <circle cx="100" cy="10" r="1.5" fill="white" stroke={color} />
+                                    </svg>
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-400 mt-2">
+                                    <span>2022</span>
+                                    <span>2023</span>
+                                    <span>2024</span>
+                                </div>
+                            </div>
+                        );
+                    case 'CUSTOM': // Custom Report Settings - Enhanced
+                        return (
+                            <div className="bg-white p-6 rounded-lg shadow-sm border h-full flex flex-col">
+                                <h4 className="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2">
+                                    <Wrench size={18} className="text-gray-600"/> 맞춤형 상세 리포트 생성
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 overflow-y-auto">
+                                    {/* Left Column: Settings */}
+                                    <div className="space-y-5">
+                                        {/* 1. Period */}
+                                        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                                            <label className="text-xs font-bold text-gray-700 block mb-2 flex items-center gap-1"><Monitor size={12}/> 분석 기간 (Period)</label>
+                                            <div className="flex gap-2 mb-2">
+                                                <input type="date" className="border rounded px-2 py-1 text-xs w-full" defaultValue="2024-02-01"/>
+                                                <span className="text-gray-400">~</span>
+                                                <input type="date" className="border rounded px-2 py-1 text-xs w-full" defaultValue="2024-02-15"/>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {['1시간', '1일', '1주', '1월'].map((t,i)=>(
+                                                    <button key={i} className={`flex-1 text-[10px] py-1 rounded border ${i===1?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-600'}`}>{t}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* 2. Target Hierarchy (Line/Part) */}
+                                        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                                            <label className="text-xs font-bold text-gray-700 block mb-2 flex items-center gap-1"><Search size={12}/> 대상 설비 및 부품 (Target)</label>
+                                            <div className="space-y-2">
+                                                <select className="w-full border rounded p-1.5 text-xs">
+                                                    <option>Line A (High-Speed Bonding)</option>
+                                                    <option>Line B (Assembly)</option>
+                                                </select>
+                                                <select className="w-full border rounded p-1.5 text-xs">
+                                                    <option>Eqp #101 (Wire Bonder)</option>
+                                                    <option>Eqp #102 (Die Attacher)</option>
+                                                </select>
+                                                <select className="w-full border rounded p-1.5 text-xs bg-blue-50 border-blue-200 font-bold text-blue-800">
+                                                    <option>전체 부품 (All Components)</option>
+                                                    <option>Servo Motor (Axis X)</option>
+                                                    <option>Heater Unit</option>
+                                                    <option>Spindle Motor</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* 3. Metrics */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-2">분석 항목 (Metrics)</label>
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                {['전력량 (kWh)', '전류 부하 (A)', '온도 (℃)', '진동 (mm/s)', '가동 시간 (Hr)', '역률 (%)'].map((m,i)=>(
+                                                    <label key={i} className="flex items-center gap-2 p-1.5 border rounded hover:bg-slate-50 cursor-pointer bg-white">
+                                                        <input type="checkbox" defaultChecked={i<4} className="rounded text-blue-600"/> {m}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Preview */}
+                                    <div className="flex flex-col border rounded-lg overflow-hidden">
+                                        <div className="bg-gray-100 px-3 py-2 border-b text-xs font-bold text-gray-600">Data Preview</div>
+                                        <div className="flex-1 bg-white overflow-auto">
+                                            <table className="w-full text-[10px] text-left">
+                                                <thead className="bg-gray-50 text-gray-500 sticky top-0">
+                                                    <tr>
+                                                        <th className="p-2 border-b">Time</th>
+                                                        <th className="p-2 border-b">Part</th>
+                                                        <th className="p-2 border-b">Metric</th>
+                                                        <th className="p-2 border-b text-right">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {[
+                                                        {t:'02-01 09:00', p:'Servo Motor', m:'전력량', v:'12.5 kWh'},
+                                                        {t:'02-01 09:00', p:'Servo Motor', m:'온도', v:'45.2 ℃'},
+                                                        {t:'02-01 09:00', p:'Heater', m:'전력량', v:'8.2 kWh'},
+                                                        {t:'02-01 10:00', p:'Servo Motor', m:'전력량', v:'13.1 kWh'},
+                                                        {t:'02-01 10:00', p:'Servo Motor', m:'온도', v:'48.5 ℃'},
+                                                        {t:'02-01 10:00', p:'Heater', m:'전력량', v:'7.9 kWh'},
+                                                        {t:'02-01 11:00', p:'Servo Motor', m:'전력량', v:'12.8 kWh'},
+                                                        {t:'02-01 11:00', p:'Servo Motor', m:'온도', v:'46.1 ℃'},
+                                                    ].map((r,i)=>(
+                                                        <tr key={i} className="border-b hover:bg-blue-50">
+                                                            <td className="p-2 text-gray-600">{r.t}</td>
+                                                            <td className="p-2 font-bold text-gray-800">{r.p}</td>
+                                                            <td className="p-2 text-gray-500">{r.m}</td>
+                                                            <td className="p-2 text-right font-mono">{r.v}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="p-3 bg-gray-50 border-t flex justify-between items-center">
+                                            <span className="text-[10px] text-gray-500">Total 1,240 rows selected</span>
+                                            <button className="px-4 py-2 text-white rounded text-xs shadow-md hover:opacity-90 flex items-center gap-2" style={{backgroundColor: color}}>
+                                                <Download size={12}/> Download PDF/Excel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    case 'ANALYSIS': // Peak Analysis
+                        return (
+                            <div className="bg-white p-6 rounded-lg shadow-sm border h-full flex flex-col">
+                                <div className="flex items-center gap-2 mb-4 text-red-600">
+                                    <AlertTriangle size={24}/>
+                                    <h4 className="font-bold text-lg">Peak Load Analysis Report</h4>
+                                </div>
+                                <div className="bg-red-50 p-4 rounded-lg border border-red-100 mb-4">
+                                    <p className="text-sm text-red-800 font-bold mb-1">Critical Event Detected</p>
+                                    <p className="text-xs text-red-600">2024-02-15 14:23:00에 계약 전력 대비 98% 부하가 발생했습니다.</p>
+                                </div>
+                                <div className="flex-1 border rounded-lg p-2 bg-slate-50 relative">
+                                    <div className="absolute top-2 right-2 text-xs font-bold text-gray-500">Load Profile (14:00 - 15:00)</div>
+                                    <div className="h-full w-full flex items-end gap-1 pt-6 px-2">
+                                        {[40,45,50,60,75,90,98,92,85,70,60,50].map((h,i) => (
+                                            <div key={i} className={`flex-1 rounded-t ${h>90 ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} style={{height: `${h}%`}}></div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="mt-4">
+                                    <h5 className="text-xs font-bold text-gray-600 mb-2">Top 3 Contributing Assets</h5>
+                                    <ul className="text-xs space-y-1">
+                                        <li className="flex justify-between border-b pb-1"><span>1. Air Compressor #2</span><span className="font-bold text-red-500">250 kW</span></li>
+                                        <li className="flex justify-between border-b pb-1"><span>2. Chiller Unit #1</span><span className="font-bold text-red-500">180 kW</span></li>
+                                        <li className="flex justify-between"><span>3. Reflow Oven C</span><span className="font-bold text-red-500">120 kW</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        );
+                    default: return <div>Contents Not Available</div>;
+                }
             };
 
             useEffect(() => {
@@ -120,6 +397,7 @@
 
             // [유한화학 슬라이드 데이터]
             const yuhanSlides = [
+                // ... (기존 유한화학 슬라이드 데이터 유지)
                 {
                     id: 'title',
                     render: () => (
@@ -447,6 +725,7 @@
 
             // [앰코 FEMS 슬라이드 데이터]
             const amkorSlides = [
+                // ... (기존 앰코 슬라이드 데이터는 변경 없이 유지)
                 {
                     id: 'title',
                     render: () => (
@@ -468,7 +747,6 @@
                     render: () => (
                         <SlideLayout title="FEMS란 무엇인가?">
                             <div className="flex flex-col h-full gap-4">
-                                {/* 상단 정의 영역 */}
                                 <div className="bg-white p-5 rounded-xl border-l-4 shadow-sm flex-none" style={{borderColor: theme.primary}}>
                                     <h3 className="text-xl font-bold mb-2 flex items-center gap-2" style={{color: theme.secondary}}>
                                         <BatteryCharging size={24} style={{color: theme.primary}}/> 핵심 목표: 에너지 비용 획기적 절감
@@ -477,8 +755,6 @@
                                         공장의 에너지 사용 현황을 실시간으로 모니터링하고 분석하여, 낭비 요소를 제거하고 효율을 극대화함으로써 <strong>에너지 비용(Cost)을 절감</strong>하고 <strong>생산성</strong>을 높이는 시스템입니다.
                                     </p>
                                 </div>
-
-                                {/* 하단 카드 영역 (관리 항목) */}
                                 <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {[{label: '전기 (Electricity)', icon: <Zap size={32}/>, desc: '전력량, 피크 전력, 역률 관리'},
                                       {label: '열/스팀 (Heat/Steam)', icon: <Flame size={32}/>, desc: '보일러 효율, 스팀 배관 손실'},
@@ -491,8 +767,6 @@
                                         </div>
                                     ))}
                                 </div>
-                                
-                                {/* 하단 KPI 배너 */}
                                 <div className="bg-[#454D59] text-white p-3 rounded-lg flex items-center justify-between px-6 shadow-lg">
                                     <div className="flex items-center gap-3">
                                         <div className="bg-white/20 p-2 rounded-full"><BatteryCharging size={20}/></div>
@@ -509,13 +783,10 @@
                     render: () => (
                         <SlideLayout title="데이터 기반 분석 및 최적화">
                             <div className="flex flex-col h-full gap-4 justify-center">
-                                {/* 산술적 머신러닝 헤더 */}
                                 <div className="text-center mb-2">
                                     <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">Core Technology</span>
                                     <h3 className="text-xl font-bold mt-2 text-gray-800">산술적 머신러닝 (Arithmetic Machine Learning)</h3>
                                 </div>
-
-                                {/* Flow Visualization */}
                                 <div className="flex items-center justify-center gap-4 mb-2">
                                     <div className="bg-slate-50 p-4 rounded-xl border border-gray-200 w-1/4 h-48 flex flex-col items-center justify-center shadow-sm">
                                         <div className="text-gray-500 mb-2 font-bold text-sm">Input: Raw Data</div>
@@ -526,12 +797,10 @@
                                             <div className="bg-white p-2 rounded border"><Wrench size={16} className="mx-auto mb-1 text-gray-500"/>Vibe</div>
                                         </div>
                                     </div>
-                                    
                                     <div className="flex flex-col items-center text-gray-300">
                                         <span className="text-[10px] font-bold text-gray-400 mb-1">Processing</span>
                                         <ArrowRightCircle size={32} className="text-blue-500 animate-pulse"/>
                                     </div>
-
                                     <div className="bg-[#454D59] text-white p-4 rounded-xl w-1/3 h-48 flex flex-col items-center justify-center shadow-lg relative overflow-hidden">
                                         <div className="absolute inset-0 bg-blue-500/10"></div>
                                         <Brain size={40} className="text-white mb-2 z-10"/>
@@ -542,12 +811,10 @@
                                             <li>실시간 이상 패턴 감지</li>
                                         </ul>
                                     </div>
-
                                     <div className="flex flex-col items-center text-gray-300">
                                         <span className="text-[10px] font-bold text-gray-400 mb-1">Optimize</span>
                                         <ArrowRightCircle size={32} className="text-green-500 animate-pulse"/>
                                     </div>
-
                                     <div className="bg-green-50 p-4 rounded-xl border border-green-200 w-1/4 h-48 flex flex-col items-center justify-center shadow-sm">
                                         <div className="text-green-700 mb-2 font-bold text-sm">Output: Optimization</div>
                                         <div className="space-y-2 w-full">
@@ -557,18 +824,14 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Graph Example */}
                                 <div className="bg-white p-4 rounded-xl border border-gray-200 flex-1 shadow-sm flex flex-col">
                                     <h5 className="text-sm font-bold text-gray-600 mb-2 flex items-center gap-2"><ChartIcon size={16}/> 생산량 대비 에너지 상관분석 (Correlation Analysis)</h5>
                                     <div className="flex-1 relative border-l border-b border-gray-300 ml-4 mb-4">
-                                        {/* Scatter Plot Simulation */}
                                         {[...Array(20)].map((_, i) => (
                                             <div key={i} className="absolute w-2 h-2 rounded-full bg-blue-500/50" 
                                                 style={{left: `${Math.random()*90 + 5}%`, bottom: `${Math.random()*40 + (Math.random()*40) + 10}%`}}>
                                             </div>
                                         ))}
-                                        {/* Regression Line */}
                                         <div className="absolute left-0 bottom-10 w-full h-full border-t-2 border-red-400/50 transform rotate-12 origin-bottom-left"></div>
                                         <div className="absolute bottom-[-20px] w-full text-center text-xs text-gray-400">Production Rate (생산량)</div>
                                         <div className="absolute left-[-30px] top-1/2 -rotate-90 text-xs text-gray-400">Energy (에너지)</div>
@@ -583,34 +846,28 @@
                     render: () => (
                         <SlideLayout title="환경·전기 데이터 통합 및 보안 아키텍처">
                             <div className="flex flex-col h-full gap-4">
-                                {/* 1. 통합 관리 섹션 (비중 확대) */}
                                 <div className="flex-[1.4] bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col">
                                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-[#0D4C8F] border-b pb-2">
                                         <Database size={20}/> 환경·전기 데이터 통합 관리
                                     </h3>
                                     <div className="flex-1 flex items-center justify-around relative">
-                                        {/* 기존 도식 유지하되 스타일 조정 */}
                                         <div className="bg-green-50 p-4 rounded-xl border border-green-100 text-center w-1/4 h-32 flex flex-col justify-center items-center">
                                             <div className="text-green-600 mb-2"><Leaf size={28}/></div>
                                             <h4 className="font-bold text-green-800 text-sm">환경 데이터</h4>
                                             <p className="text-[10px] text-green-600 mt-1">온도, 습도, 배출가스</p>
                                         </div>
-                                        
                                         <div className="flex flex-col items-center gap-1 text-gray-300">
                                             <span className="text-[10px] font-bold text-gray-400">Collect</span>
                                             <div className="animate-pulse"><ChevronRight size={24}/></div>
                                         </div>
-                                        
                                         <div className="bg-[#454D59] text-white p-6 rounded-full shadow-lg w-32 h-32 flex flex-col items-center justify-center z-10 border-4 border-slate-100">
                                             <Database size={28} className="mb-2"/>
                                             <div className="text-xs font-bold">Integrated<br/>DB</div>
                                         </div>
-                                        
                                         <div className="flex flex-col items-center gap-1 text-gray-300">
                                             <span className="text-[10px] font-bold text-gray-400">Collect</span>
                                             <div className="animate-pulse rotate-180"><ChevronRight size={24}/></div>
                                         </div>
-                                        
                                         <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-center w-1/4 h-32 flex flex-col justify-center items-center">
                                             <div className="text-yellow-600 mb-2"><Zap size={28}/></div>
                                             <h4 className="font-bold text-yellow-800 text-sm">전기 데이터</h4>
@@ -618,8 +875,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                {/* 2. 보안 섹션 (비중 축소 및 정돈) */}
                                 <div className="flex-1 bg-slate-50 border rounded-xl p-4 flex flex-col">
                                     <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-[#454D59]">
                                         <ShieldCheck size={20}/> 보안 시스템 (Security)
@@ -652,10 +907,7 @@
                     render: () => (
                         <SlideLayout title="나노 단위 모니터링 (Intelligent Dashboard)" isDark={true}>
                             <div className="bg-slate-900 text-white p-2 h-full flex gap-3 text-xs dashboard-grid">
-                                
-                                {/* 1. Dashboard UI Area (65%) */}
                                 <div className="flex-[2] flex flex-col gap-3">
-                                    {/* Header */}
                                     <div className="grid grid-cols-4 gap-2 h-16">
                                         {[{ l: 'Total Load', v: '45.2 MW', c: 'text-blue-400' }, { l: 'Peak Status', v: 'Normal', c: 'text-green-400' }, { l: 'Savings', v: '₩ 125M', c: 'text-yellow-400' }, { l: 'Ops Rate', v: '98.5%', c: 'text-purple-400' }].map((k, i) => (
                                             <div key={i} className="bg-slate-800/80 rounded border border-slate-700 p-2 flex flex-col justify-center">
@@ -664,7 +916,6 @@
                                             </div>
                                         ))}
                                     </div>
-                                    {/* Main Viz */}
                                     <div className="flex-1 bg-slate-800/50 rounded border border-slate-700 p-2 relative flex flex-col">
                                         <div className="flex justify-between mb-2">
                                             <span className="font-bold text-gray-300 flex items-center gap-1"><Brain size={12} className="text-blue-400"/> AI Load Prediction</span>
@@ -675,7 +926,6 @@
                                             ))}
                                         </div>
                                     </div>
-                                    {/* Bottom Grid - Updated Component Health and Cost */}
                                     <div className="h-24 grid grid-cols-2 gap-2">
                                         <div className="bg-slate-800/50 rounded border border-slate-700 p-2">
                                             <span className="text-[10px] text-gray-400 mb-1 block">Component Health</span>
@@ -699,8 +949,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* 2. Explanatory Panel (35%) - Updated */}
                                 <div className="flex-1 bg-slate-800 rounded-xl border border-slate-600 p-4 flex flex-col justify-center space-y-6">
                                     <div>
                                         <h4 className="text-blue-400 font-bold text-sm mb-2 flex items-center gap-2">
@@ -710,7 +958,6 @@
                                             단순히 공장 단위가 아닌, <strong>부품(Component) 레벨</strong>까지 수직적으로 데이터를 파고드는 심층 모니터링을 제공합니다.
                                         </p>
                                     </div>
-                                    
                                     <ul className="space-y-3">
                                         <li className="flex gap-2 text-xs">
                                             <div className="mt-0.5 text-green-400"><Database size={12}/></div>
@@ -735,7 +982,6 @@
                                         </li>
                                     </ul>
                                 </div>
-
                             </div>
                         </SlideLayout>
                     )
@@ -753,7 +999,7 @@
                                     {title: 'Custom Report', desc: '데이터 접근 권한자 맞춤형 리포트', icon: <Wrench/>, type: 'CUSTOM'},
                                     {title: 'Peak Analysis', desc: '피크 원인 분석 및 누수 절감 제안', icon: <Zap/>, type: 'ANALYSIS'}
                                 ].map((item, i) => (
-                                    <div key={i} className="bg-white border border-gray-200 hover:border-blue-500 rounded-xl p-0 shadow-sm transition-all hover:shadow-lg flex flex-col group overflow-hidden relative">
+                                    <div key={i} className="bg-white border border-gray-200 hover:border-blue-500 rounded-xl p-0 shadow-sm transition-all hover:shadow-lg flex flex-col group overflow-hidden relative cursor-pointer" onClick={() => setActivePopup(item)}>
                                         <div className="h-1 bg-gray-100 group-hover:bg-blue-500 transition-colors"></div>
                                         <div className="p-4 flex-1 flex flex-col">
                                             <div className="flex justify-between items-start mb-3">
@@ -914,89 +1160,4 @@
 
             const slides = project === 'yuhan' ? yuhanSlides : amkorSlides;
 
-            const nextSlide = () => setActiveSlide((prev) => (prev + 1) % slides.length);
-            const prevSlide = () => setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length);
-
-            return (
-                <div className="w-full flex flex-col items-center justify-center">
-                    
-                    {/* 상단 프로젝트 토글 - 외부로 이동 */}
-                    <div className="flex items-center gap-3 glass-panel p-2 rounded-full px-4 shadow-sm mb-6 z-50">
-                         <span className={`text-xs font-bold transition-colors ${project === 'yuhan' ? 'text-[#AF251B]' : 'text-gray-400'}`}>Yuhan Chemical</span>
-                         <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                            <input type="checkbox" name="toggle" id="toggle" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-0" 
-                                style={{borderColor: project === 'yuhan' ? '#AF251B' : '#0D4C8F', left: project === 'yuhan' ? '0' : '50%'}}
-                                checked={project === 'amkor'} 
-                                onChange={toggleProject}
-                            />
-                            <label htmlFor="toggle" className="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 opacity-50" 
-                                style={{backgroundColor: project === 'yuhan' ? '#AF251B' : '#0D4C8F'}}
-                            ></label>
-                        </div>
-                        <span className={`text-xs font-bold transition-colors ${project === 'amkor' ? 'text-[#0D4C8F]' : 'text-gray-400'}`}>Amkor Tech</span>
-                    </div>
-
-                    <div className="w-full max-w-6xl aspect-video bg-white shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden flex flex-col relative border border-gray-200 transition-all duration-500">
-                        {/* Header */}
-                        <div className="h-14 border-b flex items-center justify-between px-6 bg-white z-20 flex-none relative">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs italic shadow-sm transition-colors duration-500" style={{backgroundColor: theme.primary}}>
-                                    {theme.logo}
-                                </div>
-                                <span className="font-bold text-base tracking-tight transition-colors duration-500" style={{color: theme.secondary}}>
-                                    {project === 'yuhan' ? 'YUHAN' : 'AMKOR'} <span style={{color: theme.primary}}>{project === 'yuhan' ? 'DI' : 'FEMS'}</span> PROJECT
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm font-medium">
-                                <span className="px-3 py-1 bg-gray-100 rounded-full text-xs transition-colors duration-500" style={{color: theme.secondary}}>
-                                    {project === 'yuhan' ? 'Phase 2: 고도화 전략' : 'Phase 1: 아키텍처 설계'}
-                                </span>
-                                <div className="w-px h-3 bg-gray-300"></div>
-                                <span className="text-gray-500 italic text-xs">Provided by GANI Co., Ltd.</span>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 relative overflow-hidden bg-white">
-                            {slides[activeSlide].render()}
-                        </div>
-
-                        {/* Footer Controls */}
-                        <div className="h-16 bg-gray-50 border-t flex items-center justify-between px-6 z-20 flex-none">
-                            <div className="flex gap-2">
-                                {slides.map((_, i) => (
-                                    <div 
-                                        key={i} 
-                                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer hover:bg-gray-400`}
-                                        style={{width: activeSlide === i ? '2rem' : '0.5rem', backgroundColor: activeSlide === i ? theme.primary : '#d1d5db'}}
-                                        onClick={() => setActiveSlide(i)}
-                                    />
-                                ))}
-                            </div>
-                            <div className="flex gap-3">
-                                <button 
-                                    onClick={prevSlide}
-                                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors font-bold text-sm text-gray-700"
-                                >
-                                    PREV
-                                </button>
-                                <button 
-                                    onClick={nextSlide}
-                                    className="px-5 py-2 rounded-lg text-white transition-colors font-bold text-sm flex items-center gap-2 shadow-md hover:opacity-90"
-                                    style={{backgroundColor: theme.secondary}}
-                                >
-                                    {activeSlide === slides.length - 1 ? 'RESTART' : 'NEXT'}
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+            const nextSlide =
